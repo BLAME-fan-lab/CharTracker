@@ -1,7 +1,8 @@
 import { todayStr, weekStartOf } from '../lib/dates'
 import { created, newId } from './base'
+import type { EntityTable } from 'dexie'
 import type { TrackerDB } from './db'
-import type { AppSettings, BaseRecord, Module } from './types'
+import type { AppSettings, BaseRecord, Exercise, Module, Profile } from './types'
 
 /**
  * Startdaten beim allerersten Öffnen der App.
@@ -105,4 +106,26 @@ export async function seedDatabase(db: TrackerDB): Promise<void> {
     trackingStart: thisMonday,
   }
   await db.settings.add(created(settings, 'app'))
+}
+
+/** Profil und Standard-Kraftübungen (auch als Upgrade für bestehende Datenbanken). */
+export async function seedCharacter(
+  profile: EntityTable<Profile, 'id'>,
+  exercises: EntityTable<Exercise, 'id'>,
+): Promise<void> {
+  if (!(await profile.get('me'))) {
+    await profile.add(
+      created({ birthDate: null, heightCm: null, sex: null, instrument: 'Klavier', musicMilestone: 0 }, 'me'),
+    )
+  }
+  if ((await exercises.count()) === 0) {
+    const defaults: [string, Exercise['standard']][] = [
+      ['Bankdrücken', 'bench'],
+      ['Kniebeuge', 'squat'],
+      ['Kreuzheben', 'deadlift'],
+      ['Schulterdrücken', 'ohp'],
+      ['Klimmzüge', 'pullup'],
+    ]
+    await exercises.bulkAdd(defaults.map(([name, standard], i) => created({ name, standard, order: i, archived: false })))
+  }
 }

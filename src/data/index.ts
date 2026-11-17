@@ -13,6 +13,7 @@ export * as projectsRepo from './repo/projects'
 export * as uniRepo from './repo/uni'
 export * as todosRepo from './repo/todos'
 export * as backupRepo from './backup'
+export * as characterRepo from './repo/character'
 
 import { db } from './db'
 

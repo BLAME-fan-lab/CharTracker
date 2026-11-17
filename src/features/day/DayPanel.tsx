@@ -9,7 +9,7 @@ import { useToday } from '../../lib/useToday'
 import { DayTodos } from '../todos/DayTodos'
 import { DayUni } from '../uni/UniDayItems'
 import { habitsActiveOn, useHabitData } from '../week/useHabitData'
-import { DayProject, DayReading, DayStudy, DayTraining } from './DaySections'
+import { DayMusic, DayProject, DayReading, DayStudy, DayTraining, DayWeight } from './DaySections'
 import { useDayPanel } from './useDayPanel'
 
 /** Tages-Details: am Handy als Sheet von unten, am Laptop als Seitenleiste. */
@@ -76,7 +76,9 @@ function DayBody({ day }: { day: DateStr }) {
       <DayTraining day={day} disabled={isFuture} />
       <DayStudy day={day} disabled={isFuture} />
       <DayReading day={day} disabled={isFuture} />
+      <DayMusic day={day} disabled={isFuture} />
       <DayProject day={day} disabled={isFuture} />
+      <DayWeight day={day} disabled={isFuture} />
     </div>
   )
 }

@@ -10,17 +10,21 @@ export async function listHabits(): Promise<Habit[]> {
   return (await db.habits.toArray()).filter(alive).sort(byOrder)
 }
 
-export async function createHabit(name: string, activeFrom: DateStr = todayStr()): Promise<string> {
+export async function createHabit(
+  name: string,
+  activeFrom: DateStr = todayStr(),
+  weekdays: number[] | null = null,
+): Promise<string> {
   const habits = await listHabits()
   const order = habits.reduce((max, h) => Math.max(max, h.order), -1) + 1
-  const habit = created({ name: name.trim(), order, activeFrom, archivedFrom: null })
+  const habit = created({ name: name.trim(), order, activeFrom, archivedFrom: null, weekdays })
   await db.habits.add(habit)
   return habit.id
 }
 
 export async function updateHabit(
   id: string,
-  patch: Partial<Pick<Habit, 'name' | 'activeFrom'>>,
+  patch: Partial<Pick<Habit, 'name' | 'activeFrom' | 'weekdays' | 'skill'>>,
 ): Promise<void> {
   const clean = { ...patch }
   if (clean.name !== undefined) clean.name = clean.name.trim()

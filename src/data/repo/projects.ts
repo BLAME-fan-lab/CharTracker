@@ -21,6 +21,10 @@ export async function listProjectLogs(from: DateStr, to: DateStr): Promise<Proje
   return (await db.projectLogs.where('date').between(from, to, true, true).toArray()).filter(alive)
 }
 
+export async function listAllProjectLogs(): Promise<ProjectLog[]> {
+  return (await db.projectLogs.toArray()).filter(alive)
+}
+
 export async function setProjectMinutes(projectId: string, date: DateStr, minutes: number): Promise<void> {
   const id = projectLogId(projectId, date)
   const value = Math.max(0, Math.round(minutes))

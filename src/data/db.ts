@@ -1,7 +1,16 @@
 import Dexie, { type EntityTable } from 'dexie'
-import { seedDatabase } from './seed'
+import { seedCharacter, seedDatabase } from './seed'
 import type {
   AppSettings,
+  Book,
+  BodyLog,
+  Exercise,
+  LiftLog,
+  MusicLog,
+  PastGrade,
+  Profile,
+  ProjectMilestone,
+  RunLog,
   GoalTarget,
   Habit,
   HabitLog,
@@ -44,6 +53,15 @@ export class TrackerDB extends Dexie {
   modules!: EntityTable<Module, 'id'>
   studyUnits!: EntityTable<StudyUnit, 'id'>
   settings!: EntityTable<AppSettings, 'id'>
+  profile!: EntityTable<Profile, 'id'>
+  bodyLogs!: EntityTable<BodyLog, 'id'>
+  exercises!: EntityTable<Exercise, 'id'>
+  liftLogs!: EntityTable<LiftLog, 'id'>
+  runLogs!: EntityTable<RunLog, 'id'>
+  books!: EntityTable<Book, 'id'>
+  musicLogs!: EntityTable<MusicLog, 'id'>
+  projectMilestones!: EntityTable<ProjectMilestone, 'id'>
+  pastGrades!: EntityTable<PastGrade, 'id'>
 
   constructor(name = 'tracker') {
     super(name)
@@ -66,7 +84,27 @@ export class TrackerDB extends Dexie {
       studyUnits: 'id, moduleId, dueDate, updatedAt',
       settings: 'id, updatedAt',
     })
-    this.on('populate', () => seedDatabase(this))
+    // Version 2: Charakter (Phase 6). Neue Tabellen, bestehende Daten bleiben unverändert.
+    this.version(2)
+      .stores({
+        profile: 'id, updatedAt',
+        bodyLogs: 'id, date, updatedAt',
+        exercises: 'id, updatedAt',
+        liftLogs: 'id, exerciseId, date, updatedAt',
+        runLogs: 'id, date, updatedAt',
+        books: 'id, updatedAt',
+        musicLogs: 'id, date, updatedAt',
+        projectMilestones: 'id, projectId, updatedAt',
+        pastGrades: 'id, updatedAt',
+      })
+      .upgrade(async (tx) => {
+        // Bestehende Nutzer bekommen Profil und Standard-Übungen
+        await seedCharacter(tx.table('profile'), tx.table('exercises'))
+      })
+    this.on('populate', async () => {
+      await seedDatabase(this)
+      await seedCharacter(this.profile, this.exercises)
+    })
   }
 }
 
@@ -91,6 +129,15 @@ export const TABLE_NAMES = [
   'modules',
   'studyUnits',
   'settings',
+  'profile',
+  'bodyLogs',
+  'exercises',
+  'liftLogs',
+  'runLogs',
+  'books',
+  'musicLogs',
+  'projectMilestones',
+  'pastGrades',
 ] as const
 
 export type TableName = (typeof TABLE_NAMES)[number]

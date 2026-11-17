@@ -31,7 +31,7 @@ Jeder Push auf `main` baut die App und veröffentlicht sie über GitHub Actions 
 |---|---|
 | `src/lib/` | Datums- und Dauer-Hilfen (`DateStr` = `'YYYY-MM-DD'`, lokale Kalendertage) |
 | `src/data/` | Datenschicht: Typen, Dexie-Schema, Startdaten, Repositories, Lese-Hooks |
-| `src/domain/` | Reine Fachlogik (Streaks, Erfüllungsgrad, Wochenziele, später Soll/Ist) – mit Tests |
+| `src/domain/` | Reine Fachlogik (Streaks, Wochenziele, Soll/Ist, Charakter-Level) – mit Tests |
 | `src/features/` | Seiten und Bereiche der Oberfläche |
 | `src/components/` | Layout und UI-Bausteine |
 
@@ -72,5 +72,16 @@ Probeklausur) oder Präfix (`Sonstiges:`).
 3. ✅ To-do-Dashboard (Filter, Sortierung, Kategorien; To-dos in Woche, Monat und Tages-Panel)
 4. ✅ Uni-Bereich mit Soll/Ist-Logik (Übersicht, Modul-Detail, Lerneinheiten inkl. Serien, Semester-/Modul-Einstellungen, Termine in Woche/Monat/Tag)
 5. ✅ PWA (installierbar, offline), Backup per Export/Import (Datei, Teilen, Kopieren; Ersetzen oder Zusammenführen), Backup-Erinnerung, Update-Hinweis
+
+6. ✅ Charakter (6a): 7 Skill-Bäume auf einer Skala 0–1000, Charakterlevel = Durchschnitt
+   - Akademisch: ECTS-gewichteter Notendurchschnitt (1,0 → 1000, 4,0 → 250)
+   - Sportlich: 60 % Leistung (1RM bzw. Klimmzüge relativ zum Körpergewicht gegen Kraft-Standards, 5-km-Zeit) + 40 % Trainingskonstanz
+   - Gesundheit: 70 % Routinen-Disziplin + 30 % Körperwerte (BMI, Körperfett)
+   - Hygiene & Pflege: Routinen-Disziplin (1 Jahr durchgehend → 900, Nachlassen senkt halb so schnell)
+   - Lesen: Obergrenze nach Schwierigkeits-Mix × (70 % Volumen + 30 % Wochenziel-Disziplin)
+   - Musikalisch: Meilenstein-Leiter Klavier + Übungsstunden
+   - Projekt: Stunden, Meilensteine (klein/mittel/groß), Konstanz
+   - Gewohnheiten können nur an bestimmten Wochentagen gelten (z. B. samstags)
+   - 6b (geplant): Ränge, Errungenschaften, Level-Up-Animation, Avatar
 
 Später: Strong-CSV-Import (Workouts, Gewichtsverlauf, PRs), Sync über Supabase.

@@ -25,19 +25,25 @@ export async function saveGoalTarget(kind: GoalKind, validFrom: DateStr, minutes
 
 /* ---------- Lesen ---------- */
 
-export const readingLogId = (date: DateStr) => `reading_${date}`
+/** Ohne Buch: `reading_${date}` (wie bisher); mit Buch: `reading_${date}_${bookId}` */
+export const readingLogId = (date: DateStr, bookId: string | null = null) =>
+  bookId ? `reading_${date}_${bookId}` : `reading_${date}`
 
 export async function listReadingLogs(from: DateStr, to: DateStr): Promise<ReadingLog[]> {
   return (await db.readingLogs.where('date').between(from, to, true, true).toArray()).filter(alive)
 }
 
-export async function setReadingMinutes(date: DateStr, minutes: number): Promise<void> {
-  const id = readingLogId(date)
+export async function listAllReadingLogs(): Promise<ReadingLog[]> {
+  return (await db.readingLogs.toArray()).filter(alive)
+}
+
+export async function setReadingMinutes(date: DateStr, minutes: number, bookId: string | null = null): Promise<void> {
+  const id = readingLogId(date, bookId)
   const value = Math.max(0, Math.round(minutes))
   await db.transaction('rw', db.readingLogs, async () => {
     const existing = await db.readingLogs.get(id)
     if (existing) await db.readingLogs.update(id, changed({ minutes: value, deletedAt: null }))
-    else await db.readingLogs.add(created({ date, minutes: value }, id))
+    else await db.readingLogs.add(created({ date, minutes: value, bookId }, id))
   })
 }
 

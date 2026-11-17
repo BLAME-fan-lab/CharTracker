@@ -1,10 +1,21 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import type { DateStr } from '../lib/dates'
-import { listGoalTargets, listReadingLogs, listStudyLogs } from './repo/goals'
+import { listAllReadingLogs, listGoalTargets, listReadingLogs, listStudyLogs } from './repo/goals'
 import { listHabitLogs, listHabits } from './repo/habits'
-import { getProjectNote, listProjectLogs, listProjects } from './repo/projects'
+import { getProjectNote, listAllProjectLogs, listProjectLogs, listProjects } from './repo/projects'
 import { getSettings } from './repo/settings'
-import { listTrainingPlans, listTrainingSessions, listTrainingTypes } from './repo/training'
+import { listAllTrainingSessions, listTrainingPlans, listTrainingSessions, listTrainingTypes } from './repo/training'
+import {
+  getProfile,
+  listBodyLogs,
+  listBooks,
+  listExercises,
+  listLiftLogs,
+  listMusicLogs,
+  listPastGrades,
+  listProjectMilestones,
+  listRunLogs,
+} from './repo/character'
 import { listTodoCategories, listTodos } from './repo/todos'
 import { getActiveSemester, listActiveModules, listAllModules, listStudyUnits } from './repo/uni'
 
@@ -43,3 +54,17 @@ export const useStudyUnits = () => useLiveQuery(listStudyUnits, [])
 
 export const useTodos = () => useLiveQuery(listTodos, [])
 export const useTodoCategories = () => useLiveQuery(listTodoCategories, [])
+
+export const useAllReadingLogs = () => useLiveQuery(listAllReadingLogs, [])
+export const useAllProjectLogs = () => useLiveQuery(listAllProjectLogs, [])
+export const useAllTrainingSessions = () => useLiveQuery(listAllTrainingSessions, [])
+
+export const useProfile = () => useLiveQuery(getProfile, [])
+export const useBodyLogs = () => useLiveQuery(listBodyLogs, [])
+export const useExercises = () => useLiveQuery(listExercises, [])
+export const useLiftLogs = () => useLiveQuery(listLiftLogs, [])
+export const useRunLogs = () => useLiveQuery(listRunLogs, [])
+export const useBooks = () => useLiveQuery(listBooks, [])
+export const useMusicLogs = () => useLiveQuery(listMusicLogs, [])
+export const useProjectMilestones = () => useLiveQuery(listProjectMilestones, [])
+export const usePastGrades = () => useLiveQuery(listPastGrades, [])

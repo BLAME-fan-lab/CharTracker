@@ -97,3 +97,31 @@ describe('bestHabitStreak', () => {
     expect(bestHabitStreak(A, done, '2026-11-17')).toBe(3)
   })
 })
+
+describe('Wochentags-Gewohnheiten', () => {
+  // Nur samstags (ISO 6); 14.11.2026 und 21.11.2026 sind Samstage
+  const SA: HabitSpan = { id: 'sa', activeFrom: '2026-11-01', archivedFrom: null, weekdays: [6] }
+
+  it('gilt nur am geplanten Wochentag', () => {
+    expect(isHabitActiveOn(SA, '2026-11-14')).toBe(true)
+    expect(isHabitActiveOn(SA, '2026-11-15')).toBe(false)
+    const done = new DoneIndex([])
+    expect(dayCompletion([A, SA], done, '2026-11-16')).toEqual({ active: 1, done: 0, ratio: 0 })
+  })
+
+  it('Streak zählt geplante Tage, andere Tage unterbrechen nicht', () => {
+    const done = new DoneIndex(logs('sa', ['2026-11-07', '2026-11-14']))
+    expect(habitStreak(SA, done, '2026-11-19')).toBe(2)
+    expect(bestHabitStreak(SA, done, '2026-11-19')).toBe(2)
+    // Samstag 21.11. noch offen und heute → bricht nicht
+    expect(habitStreak(SA, done, '2026-11-21')).toBe(2)
+    // Samstag 21.11. vorbei und nicht erledigt → 0
+    expect(habitStreak(SA, done, '2026-11-22')).toBe(0)
+  })
+
+  it('perfekte Tage berücksichtigen Wochentags-Gewohnheit nur an ihrem Tag', () => {
+    const done = new DoneIndex([...logs('a', ['2026-11-13', '2026-11-14', '2026-11-15'])])
+    // Samstag 14.11. fehlt die Samstags-Gewohnheit → nicht perfekt
+    expect(perfectDayStreak([A, SA], done, '2026-11-15')).toBe(1)
+  })
+})

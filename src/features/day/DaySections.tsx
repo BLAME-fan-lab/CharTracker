@@ -1,12 +1,17 @@
-import { BookOpen, Dumbbell, GraduationCap, Plus, Wrench, X } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { BookOpen, Dumbbell, GraduationCap, Music, Plus, Scale, Wrench, X } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
 import { DurationStepper } from '../../components/DurationStepper'
 import { Spinner } from '../../components/ui'
 import {
+  characterRepo,
   goalsRepo,
   projectsRepo,
   trainingRepo,
   useActiveModules,
+  useBodyLogs,
+  useBooks,
+  useMusicLogs,
+  useProfile,
   useProjectLogs,
   useProjects,
   useReadingLogs,
@@ -16,6 +21,8 @@ import {
 } from '../../data'
 import type { DateStr } from '../../lib/dates'
 import { formatHM } from '../../lib/duration'
+import { formatDecimal, parseDecimal } from '../../lib/numbers'
+import { DIFFICULTY_LABEL } from '../character/labels'
 
 function Section({ icon, title, aside, children }: { icon: ReactNode; title: string; aside?: ReactNode; children: ReactNode }) {
   return (
@@ -120,19 +127,109 @@ export function DayStudy({ day, disabled }: { day: DateStr; disabled: boolean })
 
 export function DayReading({ day, disabled }: { day: DateStr; disabled: boolean }) {
   const logs = useReadingLogs(day, day)
-  if (!logs) return <Spinner />
-  const minutes = logs[0]?.minutes ?? 0
+  const books = useBooks()
+  if (!logs || !books) return <Spinner />
+  const minutesFor = (bookId: string | null) => logs.find((l) => (l.bookId ?? null) === bookId)?.minutes ?? 0
+  const total = logs.reduce((a, l) => a + l.minutes, 0)
+  // Aktuelle Bücher + Bücher mit Einträgen an diesem Tag
+  const shown = books.filter((b) => b.status === 'reading' || logs.some((l) => l.bookId === b.id))
+  const showGeneral = shown.length === 0 || minutesFor(null) > 0
   return (
-    <Section icon={<BookOpen className="size-4 text-amber-400" />} title="Lesen">
+    <Section
+      icon={<BookOpen className="size-4 text-amber-400" />}
+      title="Lesen"
+      aside={total > 0 ? <span className="text-sm tabular-nums text-zinc-400">{total} min</span> : undefined}
+    >
+      <ul className="divide-y divide-zinc-800 rounded-xl border border-zinc-800">
+        {shown.map((b) => (
+          <li key={b.id} className="flex items-center justify-between gap-2 py-1.5 pr-1.5 pl-3">
+            <span className="min-w-0">
+              <span className="block truncate text-sm text-zinc-300">{b.title}</span>
+              <span className="text-xs text-zinc-500">{DIFFICULTY_LABEL[b.difficulty]}</span>
+            </span>
+            <DurationStepper
+              mode="min"
+              value={minutesFor(b.id)}
+              onChange={(m) => void goalsRepo.setReadingMinutes(day, m, b.id)}
+              disabled={disabled}
+              label={`Lesezeit ${b.title}`}
+            />
+          </li>
+        ))}
+        {showGeneral && (
+          <li className="flex items-center justify-between gap-2 py-1.5 pr-1.5 pl-3">
+            <span className="text-sm text-zinc-300">{shown.length ? 'Ohne Buch' : 'Gelesen'}</span>
+            <DurationStepper
+              mode="min"
+              value={minutesFor(null)}
+              onChange={(m) => void goalsRepo.setReadingMinutes(day, m)}
+              disabled={disabled}
+              label="Lesezeit"
+            />
+          </li>
+        )}
+      </ul>
+      {books.length === 0 && (
+        <p className="text-xs text-zinc-500">Bücher mit Schwierigkeit legst du unter Charakter → Lesen an.</p>
+      )}
+    </Section>
+  )
+}
+
+export function DayMusic({ day, disabled }: { day: DateStr; disabled: boolean }) {
+  const logs = useMusicLogs()
+  const profile = useProfile()
+  if (!logs || !profile) return <Spinner />
+  const minutes = logs.find((l) => l.date === day)?.minutes ?? 0
+  return (
+    <Section icon={<Music className="size-4 text-fuchsia-400" />} title={profile.instrument || 'Musik'}>
       <div className="flex items-center justify-between gap-2 rounded-xl border border-zinc-800 py-1.5 pr-1.5 pl-3">
-        <span className="text-sm text-zinc-300">Gelesen</span>
+        <span className="text-sm text-zinc-300">Geübt</span>
         <DurationStepper
           mode="min"
+          step={10}
           value={minutes}
-          onChange={(m) => void goalsRepo.setReadingMinutes(day, m)}
+          onChange={(m) => void characterRepo.setMusicMinutes(day, m)}
           disabled={disabled}
-          label="Lesezeit"
+          label={`Übungszeit ${profile.instrument}`}
         />
+      </div>
+    </Section>
+  )
+}
+
+export function DayWeight({ day, disabled }: { day: DateStr; disabled: boolean }) {
+  const logs = useBodyLogs()
+  const [text, setText] = useState<string | null>(null)
+  if (!logs) return <Spinner />
+  const entry = logs.find((l) => l.date === day)
+  const value = text ?? formatDecimal(entry?.weightKg ?? null)
+  const commit = () => {
+    if (text == null) return
+    const v = parseDecimal(text)
+    if (text.trim() === '') void characterRepo.setBodyLog(day, { weightKg: null })
+    else if (v != null && v >= 30 && v <= 300) void characterRepo.setBodyLog(day, { weightKg: v })
+    setText(null)
+  }
+  return (
+    <Section icon={<Scale className="size-4 text-rose-400" />} title="Gewicht">
+      <div className="flex items-center justify-between gap-2 rounded-xl border border-zinc-800 py-1.5 pr-1.5 pl-3">
+        <span className="text-sm text-zinc-300">Heute gewogen (optional)</span>
+        <span className="flex items-center gap-1.5">
+          <input
+            type="text"
+            inputMode="decimal"
+            value={value}
+            disabled={disabled}
+            placeholder="–"
+            aria-label="Gewicht in kg"
+            onChange={(e) => setText(e.target.value)}
+            onBlur={commit}
+            onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+            className="h-8 w-16 rounded-lg border border-zinc-700 bg-zinc-950 text-center text-sm tabular-nums text-zinc-100 placeholder:text-zinc-600 focus:border-emerald-500 focus:outline-none disabled:opacity-40"
+          />
+          <span className="text-xs text-zinc-500">kg</span>
+        </span>
       </div>
     </Section>
   )

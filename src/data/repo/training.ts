@@ -64,6 +64,10 @@ export async function listTrainingSessions(from: DateStr, to: DateStr): Promise<
   return rows.filter(alive).sort((a, b) => a.date.localeCompare(b.date) || a.createdAt - b.createdAt)
 }
 
+export async function listAllTrainingSessions(): Promise<TrainingSession[]> {
+  return (await db.trainingSessions.toArray()).filter(alive)
+}
+
 export async function addTrainingSession(
   date: DateStr,
   typeId: string,

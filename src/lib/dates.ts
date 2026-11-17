@@ -4,6 +4,7 @@ import {
   differenceInCalendarDays,
   endOfMonth,
   format,
+  getISODay,
   getISOWeek,
   isValid,
   parseISO,
@@ -50,6 +51,9 @@ export function daysInRange(from: DateStr, to: DateStr): DateStr[] {
 }
 
 export const isoWeek = (s: DateStr): number => getISOWeek(fromDateStr(s))
+
+/** ISO-Wochentag: 1 = Montag … 7 = Sonntag */
+export const isoWeekday = (s: DateStr): number => getISODay(fromDateStr(s))
 
 export const fmt = (s: DateStr, pattern: string): string =>
   format(fromDateStr(s), pattern, { locale: de })

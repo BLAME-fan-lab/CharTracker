@@ -18,6 +18,14 @@ const router = createHashRouter([
         lazy: () => import('./features/uni/ModulePage').then((m) => ({ Component: m.ModulePage })),
       },
       {
+        path: 'charakter',
+        lazy: () => import('./features/character/CharacterPage').then((m) => ({ Component: m.CharacterPage })),
+      },
+      {
+        path: 'charakter/:skill',
+        lazy: () => import('./features/character/SkillPage').then((m) => ({ Component: m.SkillPage })),
+      },
+      {
         path: 'einstellungen',
         lazy: () => import('./features/settings/SettingsPage').then((m) => ({ Component: m.SettingsPage })),
       },

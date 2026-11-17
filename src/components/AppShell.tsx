@@ -1,4 +1,4 @@
-import { CalendarDays, GraduationCap, ListTodo, Settings } from 'lucide-react'
+import { CalendarDays, GraduationCap, ListTodo, Settings, Swords } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { DayPanel } from '../features/day/DayPanel'
@@ -9,6 +9,7 @@ const NAV: { to: string; label: string; icon: ReactNode; match?: string[] }[] = 
   { to: '/woche', label: 'Übersicht', icon: <CalendarDays className="size-5" />, match: ['/woche', '/monat'] },
   { to: '/todos', label: 'To-dos', icon: <ListTodo className="size-5" /> },
   { to: '/uni', label: 'Uni', icon: <GraduationCap className="size-5" /> },
+  { to: '/charakter', label: 'Charakter', icon: <Swords className="size-5" /> },
   { to: '/einstellungen', label: 'Einstellungen', icon: <Settings className="size-5" /> },
 ]
 
@@ -50,13 +51,13 @@ export function AppShell() {
 
       {/* Handy: Leiste unten */}
       <nav className="pb-safe fixed inset-x-0 bottom-0 z-40 border-t border-zinc-800 bg-zinc-950/95 backdrop-blur md:hidden">
-        <div className="grid grid-cols-4">
+        <div className="grid grid-cols-5">
           {NAV.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               className={cx(
-                'flex flex-col items-center gap-0.5 py-2 text-[11px] transition-colors',
+                'flex min-w-0 flex-col items-center gap-0.5 py-2 text-[10.5px] transition-colors',
                 isActive(item) ? 'text-emerald-400' : 'text-zinc-400',
               )}
             >

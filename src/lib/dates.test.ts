@@ -83,3 +83,18 @@ describe('duration', () => {
     expect(formatHours(750)).toBe('12,5')
   })
 })
+
+import { formatClock, parseClock, parseDecimal } from './numbers'
+
+describe('numbers', () => {
+  it('parst deutsche Zahlen und Uhrzeiten', () => {
+    expect(parseDecimal('78,5')).toBe(78.5)
+    expect(parseDecimal('')).toBeNull()
+    expect(parseDecimal('abc')).toBeNull()
+    expect(parseClock('25:30')).toBe(1530)
+    expect(parseClock('1:02:15')).toBe(3735)
+    expect(parseClock('25')).toBeNull()
+    expect(formatClock(1530)).toBe('25:30')
+    expect(formatClock(3735)).toBe('1:02:15')
+  })
+})

@@ -1,9 +1,12 @@
 import { Archive, ArchiveRestore, ArrowDown, ArrowUp, Check, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
-import { habitsRepo, useHabits, type Habit } from '../../data'
+import { habitsRepo, useHabits, type Habit, type HabitSkill } from '../../data'
+import { habitSkill } from '../../domain/characterSheet'
 import { fmt, isValidDateStr, todayStr } from '../../lib/dates'
 import { Button, Card, ConfirmBar, IconButton, Spinner, TextInput } from '../../components/ui'
 import { cx } from '../../lib/cx'
+
+const WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
 
 export function HabitSettings() {
   const habits = useHabits()
@@ -58,16 +61,22 @@ function HabitRow({ habit, isFirst, isLast }: { habit: Habit; isFirst: boolean; 
   const [confirming, setConfirming] = useState(false)
   const [name, setName] = useState(habit.name)
   const [activeFrom, setActiveFrom] = useState(habit.activeFrom)
+  const [weekdays, setWeekdays] = useState<number[]>(habit.weekdays ?? [])
+  const [skill, setSkill] = useState<HabitSkill>(habitSkill(habit))
 
   const startEdit = () => {
     setName(habit.name)
     setActiveFrom(habit.activeFrom)
+    setWeekdays(habit.weekdays ?? [])
+    setSkill(habitSkill(habit))
     setEditing(true)
   }
   const save = (e?: FormEvent) => {
     e?.preventDefault()
     if (!name.trim() || !isValidDateStr(activeFrom)) return
-    void habitsRepo.updateHabit(habit.id, { name, activeFrom })
+    // alle oder keine Tage = täglich
+    const days = weekdays.length === 0 || weekdays.length === 7 ? null : [...weekdays].sort()
+    void habitsRepo.updateHabit(habit.id, { name, activeFrom, weekdays: days, skill })
     setEditing(false)
   }
 
@@ -99,6 +108,46 @@ function HabitRow({ habit, isFirst, isLast }: { habit: Habit; isFirst: boolean; 
               className="max-w-44"
             />
           </label>
+          <div className="space-y-1">
+            <span className="text-sm text-zinc-400">Wochentage</span>
+            <div className="flex flex-wrap gap-1" role="group" aria-label="Wochentage">
+              {WEEKDAYS.map((label, i) => {
+                const d = i + 1
+                const on = weekdays.length === 0 || weekdays.includes(d)
+                return (
+                  <button
+                    key={label}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => {
+                      const base = weekdays.length === 0 ? [1, 2, 3, 4, 5, 6, 7] : weekdays
+                      const next = on ? base.filter((x) => x !== d) : [...base, d]
+                      setWeekdays(next.length === 0 ? [] : next)
+                    }}
+                    className={cx(
+                      'size-9 rounded-lg text-xs font-medium transition-colors',
+                      on ? 'bg-emerald-500/20 text-emerald-200 ring-1 ring-emerald-500/40' : 'bg-zinc-900 text-zinc-500',
+                    )}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+            <span className="block text-xs text-zinc-500">Z. B. „Aufräumen & Müll“ nur am Samstag.</span>
+          </div>
+          <label className="flex items-center gap-2 text-sm text-zinc-400">
+            <span className="shrink-0">Zählt zu</span>
+            <select
+              value={skill}
+              onChange={(e) => setSkill(e.target.value as HabitSkill)}
+              className="min-h-9 rounded-lg border border-zinc-700 bg-zinc-950 px-2 text-sm text-zinc-100"
+            >
+              <option value="health">Gesundheit</option>
+              <option value="hygiene">Hygiene & Pflege</option>
+              <option value="none">keinem Skill-Baum</option>
+            </select>
+          </label>
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setEditing(false)}>
               <X className="size-4" /> Abbrechen
@@ -112,11 +161,15 @@ function HabitRow({ habit, isFirst, isLast }: { habit: Habit; isFirst: boolean; 
     )
   }
 
+  const skillLabel = { health: 'Gesundheit', hygiene: 'Hygiene', none: null }[habitSkill(habit)]
   return (
     <li className="flex items-center gap-1 py-1 pr-1 pl-3">
       <div className="min-w-0 flex-1">
         <div className="text-sm leading-snug break-words">{habit.name}</div>
-        <div className="text-xs text-zinc-500">zählt ab {fmt(habit.activeFrom, 'dd.MM.yyyy')}</div>
+        <div className="text-xs text-zinc-500">
+          {habit.weekdays?.length ? `nur ${habit.weekdays.map((d) => WEEKDAYS[d - 1]).join(', ')}` : 'täglich'}
+          {skillLabel && ` · ${skillLabel}`} · ab {fmt(habit.activeFrom, 'dd.MM.yy')}
+        </div>
       </div>
       <IconButton label="Nach oben" disabled={isFirst} onClick={() => void habitsRepo.moveHabit(habit.id, -1)}>
         <ArrowUp className="size-4" />

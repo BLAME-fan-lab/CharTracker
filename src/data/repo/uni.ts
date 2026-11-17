@@ -47,7 +47,7 @@ export async function createModule(semesterId: string, name: string, shortName: 
 
 export async function updateModule(
   id: string,
-  patch: Partial<Pick<Module, 'name' | 'shortName' | 'examDate' | 'examTime' | 'note'>>,
+  patch: Partial<Pick<Module, 'name' | 'shortName' | 'examDate' | 'examTime' | 'note' | 'ects' | 'grade'>>,
 ): Promise<void> {
   const clean = { ...patch }
   if (clean.name !== undefined) clean.name = clean.name.trim()
