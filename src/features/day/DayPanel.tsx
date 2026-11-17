@@ -7,6 +7,7 @@ import { cx } from '../../lib/cx'
 import { addDaysStr, fmt, isoWeek, type DateStr } from '../../lib/dates'
 import { useToday } from '../../lib/useToday'
 import { DayTodos } from '../todos/DayTodos'
+import { DayUni } from '../uni/UniDayItems'
 import { habitsActiveOn, useHabitData } from '../week/useHabitData'
 import { DayProject, DayReading, DayStudy, DayTraining } from './DaySections'
 import { useDayPanel } from './useDayPanel'
@@ -70,6 +71,7 @@ function DayBody({ day }: { day: DateStr }) {
         </p>
       )}
       <DayHabits day={day} />
+      <DayUni day={day} />
       <DayTodos day={day} />
       <DayTraining day={day} disabled={isFuture} />
       <DayStudy day={day} disabled={isFuture} />

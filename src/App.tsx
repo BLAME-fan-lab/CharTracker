@@ -1,10 +1,10 @@
-import { GraduationCap } from 'lucide-react'
 import { createHashRouter, Navigate, RouterProvider } from 'react-router'
 import { AppShell } from './components/AppShell'
-import { ComingSoon } from './components/ComingSoon'
 import { MonthPage } from './features/month/MonthPage'
 import { SettingsPage } from './features/settings/SettingsPage'
 import { TodosPage } from './features/todos/TodosPage'
+import { ModulePage } from './features/uni/ModulePage'
+import { UniPage } from './features/uni/UniPage'
 import { WeekPage } from './features/week/WeekPage'
 
 const router = createHashRouter([
@@ -16,19 +16,8 @@ const router = createHashRouter([
       { path: 'woche', element: <WeekPage /> },
       { path: 'monat', element: <MonthPage /> },
       { path: 'todos', element: <TodosPage /> },
-      {
-        path: 'uni',
-        element: (
-          <div className="space-y-4">
-            <h1 className="text-xl font-bold">Uni</h1>
-            <ComingSoon
-              icon={<GraduationCap className="size-8" />}
-              title="Uni-Fortschritt"
-              text="Module, Lerneinheiten und Soll/Ist-Vergleich – kommt in Phase 4."
-            />
-          </div>
-        ),
-      },
+      { path: 'uni', element: <UniPage /> },
+      { path: 'uni/:moduleId', element: <ModulePage /> },
       { path: 'einstellungen', element: <SettingsPage /> },
       { path: '*', element: <Navigate to="/woche" replace /> },
     ],

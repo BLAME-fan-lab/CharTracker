@@ -3,6 +3,7 @@ import { GoalSettings, ProjectSettings } from './GoalSettings'
 import { HabitSettings } from './HabitSettings'
 import { TodoCategorySettings } from './TodoCategorySettings'
 import { TrainingSettings } from './TrainingSettings'
+import { UniSettings } from './UniSettings'
 
 export function SettingsPage() {
   return (
@@ -13,9 +14,9 @@ export function SettingsPage() {
       <GoalSettings />
       <ProjectSettings />
       <TodoCategorySettings />
+      <UniSettings />
       <Card title="Demnächst">
         <ul className="list-inside list-disc space-y-1 text-sm text-zinc-400">
-          <li>Semester, Module, Puffer und Toleranz (Phase 4)</li>
           <li>Export/Import als Backup (Phase 5)</li>
         </ul>
       </Card>

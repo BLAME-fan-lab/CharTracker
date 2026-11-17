@@ -13,6 +13,7 @@ import { ProjectCard } from './ProjectCard'
 import { useWeekGoals } from './useWeekGoals'
 import { WeeklyGoals } from './WeeklyGoals'
 import { WeekTodos } from './WeekTodos'
+import { WeekUni } from '../uni/UniDayItems'
 import { habitsActiveInRange, habitsActiveOn, sundayOf, useHabitData, type HabitData } from './useHabitData'
 
 export function WeekPage() {
@@ -72,6 +73,7 @@ export function WeekPage() {
         </>
       )}
       <WeekTodos days={days} today={today} onOpenDay={open} />
+      <WeekUni monday={monday} sunday={sundayOf(monday)} />
       <WeeklyGoals goals={goals} days={days} today={today} onOpenDay={open} />
       <ProjectCard monday={monday} days={days} today={today} onOpenDay={open} />
     </div>

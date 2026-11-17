@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { db } from './db'
 import * as habits from './repo/habits'
 import * as todos from './repo/todos'
+import * as uni from './repo/uni'
 import * as goals from './repo/goals'
 import * as training from './repo/training'
 import * as projects from './repo/projects'
@@ -144,5 +145,39 @@ describe('todosRepo', () => {
     const cats = await todos.listTodoCategories()
     expect(cats.map((c) => c.name)).toEqual(['Uni', 'Arbeit', 'Privat', 'Sport', 'Haushalt'])
     expect(cats.at(-1)?.archived).toBe(true)
+  })
+})
+
+describe('uniRepo', () => {
+  it('Module bearbeiten, Lerneinheiten anlegen, Serie, erledigen', async () => {
+    const [tm2] = await uni.listActiveModules()
+    await uni.updateModule(tm2.id, { examDate: '2027-02-17', examTime: '09:00' })
+    expect((await uni.listActiveModules())[0]).toMatchObject({ shortName: 'TM2', examDate: '2027-02-17', examTime: '09:00' })
+
+    const id = await uni.createStudyUnit(tm2.id, { title: ' Kapitel 1 ', type: 'script', dueDate: null })
+    expect(await uni.createStudyUnitSeries(tm2.id, 'Übungsblatt', 1, 3, 'sheet')).toBe(3)
+    let units = (await uni.listStudyUnits()).filter((u) => u.moduleId === tm2.id)
+    expect(units.map((u) => u.title)).toEqual(['Kapitel 1', 'Übungsblatt 1', 'Übungsblatt 2', 'Übungsblatt 3'])
+
+    await uni.setStudyUnitDone(id, true, '2026-11-17')
+    await uni.updateStudyUnit(units[1].id, { dueDate: '2026-11-20' })
+    await uni.deleteStudyUnit(units[3].id)
+    units = (await uni.listStudyUnits()).filter((u) => u.moduleId === tm2.id)
+    expect(units).toHaveLength(3)
+    expect(units[0].doneDate).toBe('2026-11-17')
+    expect(units[1].dueDate).toBe('2026-11-20')
+  })
+
+  it('Module anlegen, verschieben, archivieren; Semester ändern', async () => {
+    const semester = (await uni.getActiveSemester())!
+    const id = await uni.createModule(semester.id, 'Regelungstechnik', 'RT')
+    await uni.moveModule(id, -1)
+    let modules = await uni.listActiveModules()
+    expect(modules.map((m) => m.shortName).slice(-2)).toEqual(['RT', 'Messtechnik'])
+    await uni.setModuleArchived(id, true)
+    modules = await uni.listActiveModules()
+    expect(modules).toHaveLength(7)
+    await uni.updateSemester(semester.id, { targetDate: '2027-02-12' })
+    expect((await uni.getActiveSemester())?.targetDate).toBe('2027-02-12')
   })
 })

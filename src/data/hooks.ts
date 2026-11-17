@@ -35,7 +35,8 @@ export const useProjectNote = (projectId: string | undefined, weekStart: DateStr
     [projectId, weekStart],
   )
 
-export const useActiveSemester = () => useLiveQuery(getActiveSemester, [])
+/** `undefined` = lädt, `null` = kein Semester angelegt */
+export const useActiveSemester = () => useLiveQuery(async () => (await getActiveSemester()) ?? null, [])
 export const useActiveModules = () => useLiveQuery(listActiveModules, [])
 export const useAllModules = () => useLiveQuery(listAllModules, [])
 export const useStudyUnits = () => useLiveQuery(listStudyUnits, [])

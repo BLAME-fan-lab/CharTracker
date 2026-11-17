@@ -44,15 +44,18 @@ Jeder Push auf `main` baut die App und veröffentlicht sie über GitHub Actions 
   (alle aktiven Gewohnheiten erledigt).
 - **Training:** Soll pro Typ (aktuell 2× Gym + 1× Workout), Extra-Einheiten zählen als „+1“, ersetzen aber keinen anderen Typ.
   Pläne und Sollwerte gelten ab einer Woche; vergangene Wochen behalten ihren Plan.
-- **Uni-Soll:** linear ab Vorlesungsbeginn bis zum früheren Datum von (Klausur − Puffer) und Zieldatum
-  (WS 26/27: 15.02.2027) auf 100 %. „Im Plan“ = ±5 Prozentpunkte.
+- **Uni-Soll:** linear ab Vorlesungsbeginn bis zum früheren Datum von (Klausur − Puffer) und „alles fertig bis“
+  (WS 26/27: 15.02.2027) auf 100 %; ohne Klausurtermin gilt „alles fertig bis“. Optional steht das Soll in Pausen still.
+  Ist = erledigte / alle Einheiten. „Im Plan“ = Abweichung höchstens ±5 Prozentpunkte (einstellbar).
+  Nötiges Tempo = offene Einheiten ÷ verbleibende Tage bis zum Zieldatum (danach bis zur Klausur) × 7.
+  Sortierung nach Rückstand oder Klausurtermin; Module ohne Einheiten, fertige und vergangene stehen am Ende.
 
 ## Phasen
 
 1. ✅ Grundgerüst, Datenmodell, Wochenansicht mit Tageszielen und Streaks, Tages-Panel, Einstellungen für Gewohnheiten
 2. ✅ Wochenziele (Training, Lesen, Lernen, Projekt) + Monatsansicht mit Heatmap
 3. ✅ To-do-Dashboard (Filter, Sortierung, Kategorien; To-dos in Woche, Monat und Tages-Panel)
-4. Uni-Bereich mit Soll/Ist-Logik
+4. ✅ Uni-Bereich mit Soll/Ist-Logik (Übersicht, Modul-Detail, Lerneinheiten inkl. Serien, Semester-/Modul-Einstellungen, Termine in Woche/Monat/Tag)
 5. PWA/Offline, Export/Import, Feinschliff
 
 Später: Strong-CSV-Import (Workouts, Gewichtsverlauf, PRs), Sync über Supabase.
