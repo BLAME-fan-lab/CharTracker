@@ -47,7 +47,7 @@ export async function createModule(semesterId: string, name: string, shortName: 
 
 export async function updateModule(
   id: string,
-  patch: Partial<Pick<Module, 'name' | 'shortName' | 'examDate' | 'examTime'>>,
+  patch: Partial<Pick<Module, 'name' | 'shortName' | 'examDate' | 'examTime' | 'note'>>,
 ): Promise<void> {
   const clean = { ...patch }
   if (clean.name !== undefined) clean.name = clean.name.trim()
@@ -93,6 +93,22 @@ export async function createStudyUnit(moduleId: string, input: StudyUnitInput): 
   const unit = created({ moduleId, ...input, title: input.title.trim(), doneDate: null, order: await nextUnitOrder(moduleId) })
   await db.studyUnits.add(unit)
   return unit.id
+}
+
+/** Mehrere Einheiten auf einmal anlegen (z. B. aus einer eingefügten Liste). */
+export async function createStudyUnits(
+  moduleId: string,
+  items: { title: string; type: StudyUnitType; done: boolean }[],
+  today: DateStr = todayStr(),
+): Promise<number> {
+  let order = await nextUnitOrder(moduleId)
+  const units = items
+    .filter((i) => i.title.trim())
+    .map((i) =>
+      created({ moduleId, title: i.title.trim(), type: i.type, dueDate: null, doneDate: i.done ? today : null, order: order++ }),
+    )
+  await db.studyUnits.bulkAdd(units)
+  return units.length
 }
 
 /** Serie anlegen, z. B. „Übungsblatt 1“ … „Übungsblatt 12“. */

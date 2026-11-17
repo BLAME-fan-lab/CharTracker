@@ -153,6 +153,8 @@ export interface Module extends BaseRecord {
   examTime: string | null
   order: number
   archived: boolean
+  /** Freie Notizen, z. B. Klausurformat und erlaubte Hilfsmittel (optional, ältere Datensätze haben es nicht) */
+  note?: string | null
 }
 
 export type StudyUnitType = 'script' | 'sheet' | 'mock_exam' | 'other'

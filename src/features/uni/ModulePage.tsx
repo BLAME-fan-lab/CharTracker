@@ -1,8 +1,10 @@
-import { CalendarClock, Check, ChevronLeft, ListPlus, Pencil, Plus, Trash2, X } from 'lucide-react'
+import { CalendarClock, Check, ChevronLeft, ClipboardList, ListPlus, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
+import { AutoSaveTextarea } from '../../components/AutoSaveTextarea'
 import { Button, Card, CheckCircle, ConfirmBar, IconButton, Spinner, TextInput } from '../../components/ui'
 import { uniRepo, type Module, type StudyUnit, type StudyUnitType } from '../../data'
+import { parseUnitList } from '../../domain/unitList'
 import { cx } from '../../lib/cx'
 import { diffDays, fmt, isValidDateStr, type DateStr } from '../../lib/dates'
 import { formatHM } from '../../lib/duration'
@@ -41,6 +43,16 @@ export function ModulePage() {
 
       <ProgressCard view={view} today={today} bufferDays={data.config.bufferDays} />
       <ExamCard key={`${m.id}_${m.updatedAt}`} module={m} />
+      <Card title="Notizen">
+        <AutoSaveTextarea
+          key={m.id}
+          initial={m.note ?? ''}
+          onSave={(note) => void uniRepo.updateModule(m.id, { note: note.trim() ? note : null })}
+          placeholder="z. B. Klausurformat, erlaubte Hilfsmittel, Tipps vom Prof"
+          label={`Notizen zu ${m.shortName || m.name}`}
+          rows={3}
+        />
+      </Card>
       <UnitsCard moduleId={m.id} units={view.units} today={today} />
     </div>
   )
@@ -160,7 +172,7 @@ function ExamCard({ module: m }: { module: Module }) {
 }
 
 function UnitsCard({ moduleId, units, today }: { moduleId: string; units: StudyUnit[]; today: DateStr }) {
-  const [mode, setMode] = useState<'single' | 'series' | null>(units.length === 0 ? 'series' : null)
+  const [mode, setMode] = useState<'single' | 'series' | 'list' | null>(units.length === 0 ? 'series' : null)
   const groups = UNIT_TYPES.map((type) => ({ type, items: units.filter((u) => u.type === type) })).filter((g) => g.items.length > 0)
 
   return (
@@ -174,15 +186,20 @@ function UnitsCard({ moduleId, units, today }: { moduleId: string; units: StudyU
           <Button variant={mode === 'series' ? 'secondary' : 'ghost'} onClick={() => setMode(mode === 'series' ? null : 'series')}>
             <ListPlus className="size-4" /> Serie
           </Button>
+          <Button variant={mode === 'list' ? 'secondary' : 'ghost'} onClick={() => setMode(mode === 'list' ? null : 'list')}>
+            <ClipboardList className="size-4" /> Liste
+          </Button>
         </div>
       }
     >
       {mode === 'single' && <AddUnitForm moduleId={moduleId} />}
       {mode === 'series' && <AddSeriesForm moduleId={moduleId} onDone={() => setMode(null)} />}
+      {mode === 'list' && <PasteListForm moduleId={moduleId} today={today} onDone={() => setMode(null)} />}
 
       {groups.length === 0 ? (
         <p className="mt-2 text-sm text-zinc-400">
-          Noch keine Einheiten. Mit „Serie“ legst du z. B. „Übungsblatt 1–12“ oder „Kapitel 1–8“ auf einmal an.
+          Noch keine Einheiten. Mit „Serie“ legst du z. B. „Übungsblatt 1–12“ auf einmal an, mit „Liste“ fügst du eine
+          Kapitelliste ein (eine Einheit pro Zeile).
         </p>
       ) : (
         <div className="mt-3 space-y-4">
@@ -305,6 +322,58 @@ function AddSeriesForm({ moduleId, onDone }: { moduleId: string; onDone: () => v
         </span>
         <Button type="submit" variant="primary" disabled={!valid} className="shrink-0">
           <ListPlus className="size-4" /> Anlegen
+        </Button>
+      </div>
+    </form>
+  )
+}
+
+function PasteListForm({ moduleId, today, onDone }: { moduleId: string; today: DateStr; onDone: () => void }) {
+  const [text, setText] = useState('')
+  const [defaultType, setDefaultType] = useState<StudyUnitType>('script')
+  const parsed = parseUnitList(text, defaultType)
+
+  const submit = async (e: FormEvent) => {
+    e.preventDefault()
+    if (parsed.length === 0) return
+    await uniRepo.createStudyUnits(moduleId, parsed, today)
+    onDone()
+  }
+
+  return (
+    <form onSubmit={(e) => void submit(e)} className="space-y-2 rounded-xl bg-zinc-950/50 p-3">
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        rows={6}
+        autoFocus
+        aria-label="Liste der Lerneinheiten"
+        placeholder={'Eine Einheit pro Zeile, z. B.\nKapitel 1: Grundlagen\n[x] Kapitel 2: Messverfahren\nÜbungsblatt 3\nProbeklausur WS 25/26\nSonstiges: Formelzettel'}
+        className="w-full resize-y rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-emerald-500 focus:outline-none"
+      />
+      <div className="flex flex-wrap items-center gap-2 text-sm text-zinc-400">
+        <span>Ohne Schlüsselwort als</span>
+        <TypeSelect value={defaultType} onChange={setDefaultType} />
+      </div>
+      <p className="text-xs leading-relaxed text-zinc-500">
+        Typ wird erkannt an „Kapitel …“, „Übungsblatt …“/„Übungsaufgaben …“, „Probeklausur …“ oder einem Präfix wie
+        „Sonstiges:“. „[x]“ oder „✓“ am Anfang = schon erledigt.
+      </p>
+      {parsed.length > 0 && (
+        <ul className="max-h-56 divide-y divide-zinc-800 overflow-y-auto rounded-lg border border-zinc-800">
+          {parsed.map((u, i) => (
+            <li key={i} className="flex items-center gap-2 px-3 py-1.5 text-sm">
+              <span className={cx('size-2 shrink-0 rounded-full', u.done ? 'bg-emerald-400' : 'bg-zinc-700')} />
+              <span className={cx('min-w-0 flex-1 truncate', u.done && 'text-zinc-400')}>{u.title}</span>
+              <span className="shrink-0 text-xs text-zinc-500">{UNIT_TYPE_LABEL[u.type]}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="flex justify-end">
+        <Button type="submit" variant="primary" disabled={parsed.length === 0}>
+          <ClipboardList className="size-4" />
+          {parsed.length === 0 ? 'Anlegen' : `${parsed.length} ${parsed.length === 1 ? 'Einheit' : 'Einheiten'} anlegen`}
         </Button>
       </div>
     </form>

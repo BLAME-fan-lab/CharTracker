@@ -12,7 +12,7 @@ export function Card({ title, action, children, className }: {
   return (
     <section className={cx('rounded-2xl border border-zinc-800/80 bg-zinc-900/60 p-3 sm:p-4', className)}>
       {(title || action) && (
-        <header className="mb-3 flex items-center justify-between gap-2">
+        <header className="mb-3 flex flex-wrap items-center justify-between gap-2">
           {title && <h2 className="text-sm font-semibold tracking-wide text-zinc-300">{title}</h2>}
           {action}
         </header>

@@ -180,4 +180,25 @@ describe('uniRepo', () => {
     await uni.updateSemester(semester.id, { targetDate: '2027-02-12' })
     expect((await uni.getActiveSemester())?.targetDate).toBe('2027-02-12')
   })
+
+  it('Liste anlegen (mit erledigten) und Modul-Notiz', async () => {
+    const modules = await uni.listActiveModules()
+    const mt = modules.find((m) => m.shortName === 'Messtechnik')!
+    const n = await uni.createStudyUnits(
+      mt.id,
+      [
+        { title: 'Kapitel 1: Grundlagen', type: 'script', done: true },
+        { title: 'Probeklausur', type: 'mock_exam', done: false },
+      ],
+      '2026-11-17',
+    )
+    expect(n).toBe(2)
+    const units = (await uni.listStudyUnits()).filter((u) => u.moduleId === mt.id)
+    expect(units.map((u) => [u.title, u.doneDate])).toEqual([
+      ['Kapitel 1: Grundlagen', '2026-11-17'],
+      ['Probeklausur', null],
+    ])
+    await uni.updateModule(mt.id, { note: '60 min, Folien erlaubt' })
+    expect((await uni.listActiveModules()).find((m) => m.id === mt.id)?.note).toBe('60 min, Folien erlaubt')
+  })
 })
