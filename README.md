@@ -14,7 +14,16 @@ npm run lint       # oxlint
 ```
 
 Jeder Push auf `main` baut die App und veröffentlicht sie über GitHub Actions auf GitHub Pages
-(Repo → Settings → Pages → Source: „GitHub Actions“).
+(Repo → Settings → Pages → Source: „GitHub Actions“): https://blame-fan-lab.github.io/CharTracker/
+
+## Installieren und Backup
+
+- **iPhone (Safari):** Teilen → „Zum Home-Bildschirm“. **Android/Chrome:** Menü → „App installieren“.
+- Die App läuft danach offline (Service Worker, vite-plugin-pwa). Neue Versionen werden mit „Neu laden“ übernommen.
+- **Backup:** Einstellungen → Daten & App. Export als JSON-Datei, über „Teilen“ oder in die Zwischenablage.
+  Wiederherstellen per Datei oder eingefügtem Text, wahlweise *Ersetzen* oder *Zusammenführen*
+  (gleiche IDs: neuerer `updatedAt` gewinnt – dieselbe Regel wie ein späterer Sync).
+- Die App erinnert in der Wochenansicht, wenn das letzte Backup älter als 7 Tage ist.
 
 ## Architektur
 
@@ -50,12 +59,18 @@ Jeder Push auf `main` baut die App und veröffentlicht sie über GitHub Actions 
   Nötiges Tempo = offene Einheiten ÷ verbleibende Tage bis zum Zieldatum (danach bis zur Klausur) × 7.
   Sortierung nach Rückstand oder Klausurtermin; Module ohne Einheiten, fertige und vergangene stehen am Ende.
 
+## Lerneinheiten importieren
+
+Uni → „Importieren“: pro Modul eine Überschrift `# Kürzel`, darunter eine Einheit pro Zeile.
+`[x]` am Anfang = erledigt, `@ 19.11.` am Ende = fällig. Typ per Schlüsselwort (Kapitel/Vorlesung, Übung/Aufgabe,
+Probeklausur) oder Präfix (`Sonstiges:`).
+
 ## Phasen
 
 1. ✅ Grundgerüst, Datenmodell, Wochenansicht mit Tageszielen und Streaks, Tages-Panel, Einstellungen für Gewohnheiten
 2. ✅ Wochenziele (Training, Lesen, Lernen, Projekt) + Monatsansicht mit Heatmap
 3. ✅ To-do-Dashboard (Filter, Sortierung, Kategorien; To-dos in Woche, Monat und Tages-Panel)
 4. ✅ Uni-Bereich mit Soll/Ist-Logik (Übersicht, Modul-Detail, Lerneinheiten inkl. Serien, Semester-/Modul-Einstellungen, Termine in Woche/Monat/Tag)
-5. PWA/Offline, Export/Import, Feinschliff
+5. ✅ PWA (installierbar, offline), Backup per Export/Import (Datei, Teilen, Kopieren; Ersetzen oder Zusammenführen), Backup-Erinnerung, Update-Hinweis
 
 Später: Strong-CSV-Import (Workouts, Gewichtsverlauf, PRs), Sync über Supabase.

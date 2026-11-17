@@ -12,6 +12,7 @@ export * as goalsRepo from './repo/goals'
 export * as projectsRepo from './repo/projects'
 export * as uniRepo from './repo/uni'
 export * as todosRepo from './repo/todos'
+export * as backupRepo from './backup'
 
 import { db } from './db'
 

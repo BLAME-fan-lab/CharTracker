@@ -2,6 +2,7 @@ import { CalendarDays, GraduationCap, ListTodo, Settings } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { DayPanel } from '../features/day/DayPanel'
+import { UpdatePrompt } from './UpdatePrompt'
 import { cx } from '../lib/cx'
 
 const NAV: { to: string; label: string; icon: ReactNode; match?: string[] }[] = [
@@ -67,6 +68,7 @@ export function AppShell() {
       </nav>
 
       <DayPanel />
+      <UpdatePrompt />
     </div>
   )
 }

@@ -179,4 +179,6 @@ export interface AppSettings extends BaseRecord {
   pauseSollInBreaks: boolean
   /** Erster Tag, an dem die App benutzt wurde */
   trackingStart: DateStr
+  /** Zeitpunkt des letzten Exports (ms), für die Backup-Erinnerung */
+  lastBackupAt?: number | null
 }

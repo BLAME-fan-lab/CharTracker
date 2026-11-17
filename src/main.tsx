@@ -2,12 +2,16 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import { openDatabase } from './data'
+import { initInstallPrompt, requestPersistentStorage } from './lib/pwa'
 import './index.css'
 
 const root = createRoot(document.getElementById('root')!)
+initInstallPrompt()
 
 openDatabase()
   .then(() => {
+    // Browser bitten, die Daten nicht automatisch zu löschen (bei installierter App meist sofort gewährt)
+    void requestPersistentStorage()
     root.render(
       <StrictMode>
         <App />

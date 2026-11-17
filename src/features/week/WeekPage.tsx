@@ -8,6 +8,7 @@ import { Button, Card, IconButton, Spinner } from '../../components/ui'
 import { cx } from '../../lib/cx'
 import { OverviewHeader } from '../OverviewHeader'
 import { useDayPanel } from '../day/useDayPanel'
+import { BackupReminder } from './BackupReminder'
 import { HabitGrid } from './HabitGrid'
 import { ProjectCard } from './ProjectCard'
 import { useWeekGoals } from './useWeekGoals'
@@ -38,6 +39,7 @@ export function WeekPage() {
   return (
     <div className="space-y-4">
       <OverviewHeader mode="week" focus={isCurrentWeek ? today : monday} />
+      <BackupReminder today={today} />
 
       <div className="flex items-center gap-1">
         <IconButton label="Vorherige Woche" onClick={() => goTo(addDaysStr(monday, -7))}>
