@@ -18,7 +18,7 @@ const TYPE_RULES: { re: RegExp; type: UnitType; strip?: boolean }[] = [
   { re: /^(sonstiges|sonst)\s*:\s*/i, type: 'other', strip: true },
   // Schlüsselwörter am Anfang bleiben im Titel stehen
   { re: /^(kapitel|kap\.|abschnitt|vorlesung)(\s|$)/i, type: 'script' },
-  { re: /^(übungsblatt|uebungsblatt|blatt|übung|uebung|übungsaufgaben|uebungsaufgaben|aufgabenblatt|tutorium)(\s|$)/i, type: 'sheet' },
+  { re: /^(übungsblatt|uebungsblatt|blatt|übung|uebung|übungsaufgaben|uebungsaufgaben|aufgabenblatt|aufgabe|tutorium)(\s|$)/i, type: 'sheet' },
   { re: /^(probeklausur|altklausur|klausur)(\s|$)/i, type: 'mock_exam' },
 ]
 
@@ -48,7 +48,7 @@ const DUE_RE = /\s*@\s*(?:(\d{4})-(\d{2})-(\d{2})|(\d{1,2})\.(\d{1,2})\.(\d{2,4}
  * Liest eine eingefügte Liste: eine Einheit pro Zeile.
  * - Aufzählungszeichen (-, •, *, –) am Anfang werden entfernt, Nummern wie „1.“ bleiben.
  * - „[x]“, „✓“ oder „✔“ am Anfang = schon erledigt; „[ ]“ wird ignoriert.
- * - Typ: per Präfix („Sonstiges: …“) oder Schlüsselwort („Kapitel …“, „Übung …“, „Probeklausur …“), sonst `defaultType`.
+ * - Typ: per Präfix („Sonstiges: …“) oder Schlüsselwort („Kapitel …“, „Übung …“/„Aufgabe …“, „Probeklausur …“), sonst `defaultType`.
  * - Fälligkeit am Zeilenende: „@ 19.11.“, „@ 19.11.2026“ oder „@ 2026-11-19“.
  * - Zeilen, die mit „#“ beginnen (Modul-Überschriften), werden übersprungen.
  */

@@ -65,7 +65,7 @@ export function ImportSheet({ modules, today, onClose }: { modules: Module[]; to
         )}
         <p className="text-xs leading-relaxed text-zinc-400">
           Pro Modul eine Überschrift mit „#“ (Kürzel oder Name), darunter eine Einheit pro Zeile. „[x]“ am Anfang = schon
-          erledigt, „@ 19.11.“ am Ende = fällig am. Typ wird an „Vorlesung/Kapitel“, „Übung“, „Probeklausur“ oder
+          erledigt, „@ 19.11.“ am Ende = fällig am. Typ wird an „Vorlesung/Kapitel“, „Übung/Aufgabe“, „Probeklausur“ oder
           „Sonstiges:“ erkannt.
         </p>
         <textarea

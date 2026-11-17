@@ -356,7 +356,7 @@ function PasteListForm({ moduleId, today, onDone }: { moduleId: string; today: D
         <TypeSelect value={defaultType} onChange={setDefaultType} />
       </div>
       <p className="text-xs leading-relaxed text-zinc-500">
-        Typ wird erkannt an „Kapitel …“/„Vorlesung …“, „Übung …“, „Probeklausur …“ oder einem Präfix wie „Sonstiges:“.
+        Typ wird erkannt an „Kapitel …“/„Vorlesung …“, „Übung …“/„Aufgabe …“, „Probeklausur …“ oder einem Präfix wie „Sonstiges:“.
         „[x]“ am Anfang = schon erledigt, „@ 19.11.“ am Ende = fällig am.
       </p>
       {parsed.length > 0 && (

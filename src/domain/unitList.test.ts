@@ -40,6 +40,8 @@ describe('parseUnitList', () => {
     expect(parseUnitList('Kapitelübersicht lesen', 'other', TODAY)[0].type).toBe('other')
     expect(parseUnitList('Klausurtermin anmelden', 'other', TODAY)[0].type).toBe('other')
     expect(parseUnitList('Vorlesung 3 nacharbeiten', 'other', TODAY)[0].type).toBe('script')
+    expect(parseUnitList('Aufgabe 2.4 - Koaxialleiter', 'script', TODAY)[0].type).toBe('sheet')
+    expect(parseUnitList('Aufgabenteil lesen', 'script', TODAY)[0].type).toBe('script')
   })
 
   it('liest Fälligkeiten am Zeilenende', () => {
