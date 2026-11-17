@@ -201,4 +201,23 @@ describe('uniRepo', () => {
     await uni.updateModule(mt.id, { note: '60 min, Folien erlaubt' })
     expect((await uni.listActiveModules()).find((m) => m.id === mt.id)?.note).toBe('60 min, Folien erlaubt')
   })
+
+  it('Import mehrerer Module, optional mit Ersetzen', async () => {
+    const [tm2, mathe] = await uni.listActiveModules()
+    await uni.createStudyUnit(tm2.id, { title: 'Alt', type: 'script', dueDate: null })
+    const unit = (title: string, dueDate: string | null = null) => ({ title, type: 'sheet' as const, done: false, dueDate })
+    expect(await uni.importStudyUnits([{ moduleId: tm2.id, units: [unit('Übung 1', '2026-11-19')] }], false)).toBe(1)
+    expect((await uni.listStudyUnits()).filter((u) => u.moduleId === tm2.id).map((u) => u.title)).toEqual(['Alt', 'Übung 1'])
+
+    await uni.importStudyUnits(
+      [
+        { moduleId: tm2.id, units: [unit('Neu 1'), unit('Neu 2')] },
+        { moduleId: mathe.id, units: [unit('Blatt 1')] },
+      ],
+      true,
+    )
+    const units = await uni.listStudyUnits()
+    expect(units.filter((u) => u.moduleId === tm2.id).map((u) => u.title)).toEqual(['Neu 1', 'Neu 2'])
+    expect(units.filter((u) => u.moduleId === mathe.id).map((u) => u.title)).toEqual(['Blatt 1'])
+  })
 })

@@ -331,7 +331,7 @@ function AddSeriesForm({ moduleId, onDone }: { moduleId: string; onDone: () => v
 function PasteListForm({ moduleId, today, onDone }: { moduleId: string; today: DateStr; onDone: () => void }) {
   const [text, setText] = useState('')
   const [defaultType, setDefaultType] = useState<StudyUnitType>('script')
-  const parsed = parseUnitList(text, defaultType)
+  const parsed = parseUnitList(text, defaultType, today)
 
   const submit = async (e: FormEvent) => {
     e.preventDefault()
@@ -356,8 +356,8 @@ function PasteListForm({ moduleId, today, onDone }: { moduleId: string; today: D
         <TypeSelect value={defaultType} onChange={setDefaultType} />
       </div>
       <p className="text-xs leading-relaxed text-zinc-500">
-        Typ wird erkannt an „Kapitel …“, „Übungsblatt …“/„Übungsaufgaben …“, „Probeklausur …“ oder einem Präfix wie
-        „Sonstiges:“. „[x]“ oder „✓“ am Anfang = schon erledigt.
+        Typ wird erkannt an „Kapitel …“/„Vorlesung …“, „Übung …“, „Probeklausur …“ oder einem Präfix wie „Sonstiges:“.
+        „[x]“ am Anfang = schon erledigt, „@ 19.11.“ am Ende = fällig am.
       </p>
       {parsed.length > 0 && (
         <ul className="max-h-56 divide-y divide-zinc-800 overflow-y-auto rounded-lg border border-zinc-800">
@@ -365,6 +365,7 @@ function PasteListForm({ moduleId, today, onDone }: { moduleId: string; today: D
             <li key={i} className="flex items-center gap-2 px-3 py-1.5 text-sm">
               <span className={cx('size-2 shrink-0 rounded-full', u.done ? 'bg-emerald-400' : 'bg-zinc-700')} />
               <span className={cx('min-w-0 flex-1 truncate', u.done && 'text-zinc-400')}>{u.title}</span>
+              {u.dueDate && <span className="shrink-0 text-xs text-amber-300/90 tabular-nums">{fmt(u.dueDate, 'dd.MM.')}</span>}
               <span className="shrink-0 text-xs text-zinc-500">{UNIT_TYPE_LABEL[u.type]}</span>
             </li>
           ))}

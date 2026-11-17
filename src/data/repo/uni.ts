@@ -98,14 +98,21 @@ export async function createStudyUnit(moduleId: string, input: StudyUnitInput): 
 /** Mehrere Einheiten auf einmal anlegen (z. B. aus einer eingefügten Liste). */
 export async function createStudyUnits(
   moduleId: string,
-  items: { title: string; type: StudyUnitType; done: boolean }[],
+  items: { title: string; type: StudyUnitType; done: boolean; dueDate?: DateStr | null }[],
   today: DateStr = todayStr(),
 ): Promise<number> {
   let order = await nextUnitOrder(moduleId)
   const units = items
     .filter((i) => i.title.trim())
     .map((i) =>
-      created({ moduleId, title: i.title.trim(), type: i.type, dueDate: null, doneDate: i.done ? today : null, order: order++ }),
+      created({
+        moduleId,
+        title: i.title.trim(),
+        type: i.type,
+        dueDate: i.dueDate ?? null,
+        doneDate: i.done ? today : null,
+        order: order++,
+      }),
     )
   await db.studyUnits.bulkAdd(units)
   return units.length
@@ -137,6 +144,28 @@ export async function updateStudyUnit(id: string, patch: Partial<StudyUnitInput>
 
 export async function setStudyUnitDone(id: string, done: boolean, date: DateStr = todayStr()): Promise<void> {
   await db.studyUnits.update(id, changed({ doneDate: done ? date : null }))
+}
+
+/** Alle Lerneinheiten eines Moduls entfernen (Soft-Delete), z. B. vor einem Import „ersetzen“. */
+export async function deleteStudyUnitsOfModule(moduleId: string): Promise<void> {
+  const now = Date.now()
+  await db.studyUnits.where('moduleId').equals(moduleId).modify({ deletedAt: now, updatedAt: now })
+}
+
+/** Import für mehrere Module in einer Transaktion. */
+export async function importStudyUnits(
+  sections: { moduleId: string; units: { title: string; type: StudyUnitType; done: boolean; dueDate: DateStr | null }[] }[],
+  replaceExisting: boolean,
+  today: DateStr = todayStr(),
+): Promise<number> {
+  let count = 0
+  await db.transaction('rw', db.studyUnits, async () => {
+    for (const s of sections) {
+      if (replaceExisting) await deleteStudyUnitsOfModule(s.moduleId)
+      count += await createStudyUnits(s.moduleId, s.units, today)
+    }
+  })
+  return count
 }
 
 export async function deleteStudyUnit(id: string): Promise<void> {

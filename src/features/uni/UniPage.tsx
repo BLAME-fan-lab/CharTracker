@@ -1,13 +1,15 @@
-import { ChevronRight, GraduationCap } from 'lucide-react'
+import { ChevronRight, GraduationCap, Upload } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
-import { Card, SegmentedControl, Spinner } from '../../components/ui'
+import { Button, Card, SegmentedControl, Spinner } from '../../components/ui'
 import { sortModules, type UniSort } from '../../domain/uni'
 import { cx } from '../../lib/cx'
 import { diffDays, fmt } from '../../lib/dates'
 import { formatHM } from '../../lib/duration'
+import { useParamSheet } from '../../lib/useParamSheet'
 import { useToday } from '../../lib/useToday'
 import { examText, formatPerWeek, pct } from './format'
+import { ImportSheet } from './ImportSheet'
 import { useUniData, type ModuleView } from './useUniData'
 import { IstSollBar, StatusPill } from './UniParts'
 
@@ -16,6 +18,7 @@ const SORT_KEY = 'uni.sort'
 export function UniPage() {
   const today = useToday()
   const data = useUniData(today)
+  const importSheet = useParamSheet('import')
   const [sort, setSort] = useState<UniSort>(() => {
     try {
       return localStorage.getItem(SORT_KEY) === 'exam' ? 'exam' : 'backlog'
@@ -61,12 +64,17 @@ export function UniPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-bold">Uni</h1>
-        <p className="text-xs text-zinc-400">
-          {semester.name} · alles fertig bis {fmt(semester.targetDate, 'd. MMMM')}
-          {daysToTarget > 0 && ` (noch ${daysToTarget} Tage)`}
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold">Uni</h1>
+          <p className="text-xs text-zinc-400">
+            {semester.name} · alles fertig bis {fmt(semester.targetDate, 'd. MMMM')}
+            {daysToTarget > 0 && ` (noch ${daysToTarget} Tage)`}
+          </p>
+        </div>
+        <Button variant="secondary" onClick={() => importSheet.open('1')}>
+          <Upload className="size-4" /> Importieren
+        </Button>
       </div>
 
       <Card>
@@ -125,6 +133,10 @@ export function UniPage() {
           <ModuleCard key={m.module.id} view={m} />
         ))}
       </div>
+
+      {importSheet.value && (
+        <ImportSheet modules={modules.map((m) => m.module)} today={today} onClose={importSheet.close} />
+      )}
 
       <p className="px-1 text-xs leading-relaxed text-zinc-500">
         Der weiße Strich zeigt das Soll von heute: linear ab Vorlesungsbeginn ({fmt(semester.lectureStart, 'dd.MM.')}) bis
