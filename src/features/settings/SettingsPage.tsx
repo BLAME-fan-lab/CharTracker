@@ -1,6 +1,7 @@
 import { Card } from '../../components/ui'
 import { GoalSettings, ProjectSettings } from './GoalSettings'
 import { HabitSettings } from './HabitSettings'
+import { TodoCategorySettings } from './TodoCategorySettings'
 import { TrainingSettings } from './TrainingSettings'
 
 export function SettingsPage() {
@@ -11,9 +12,9 @@ export function SettingsPage() {
       <TrainingSettings />
       <GoalSettings />
       <ProjectSettings />
+      <TodoCategorySettings />
       <Card title="Demnächst">
         <ul className="list-inside list-disc space-y-1 text-sm text-zinc-400">
-          <li>To-do-Kategorien (Phase 3)</li>
           <li>Semester, Module, Puffer und Toleranz (Phase 4)</li>
           <li>Export/Import als Backup (Phase 5)</li>
         </ul>

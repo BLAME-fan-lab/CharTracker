@@ -11,6 +11,7 @@ export * as trainingRepo from './repo/training'
 export * as goalsRepo from './repo/goals'
 export * as projectsRepo from './repo/projects'
 export * as uniRepo from './repo/uni'
+export * as todosRepo from './repo/todos'
 
 import { db } from './db'
 

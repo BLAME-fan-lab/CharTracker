@@ -1,9 +1,10 @@
-import { GraduationCap, ListTodo } from 'lucide-react'
+import { GraduationCap } from 'lucide-react'
 import { createHashRouter, Navigate, RouterProvider } from 'react-router'
 import { AppShell } from './components/AppShell'
 import { ComingSoon } from './components/ComingSoon'
 import { MonthPage } from './features/month/MonthPage'
 import { SettingsPage } from './features/settings/SettingsPage'
+import { TodosPage } from './features/todos/TodosPage'
 import { WeekPage } from './features/week/WeekPage'
 
 const router = createHashRouter([
@@ -14,19 +15,7 @@ const router = createHashRouter([
       { index: true, element: <Navigate to="/woche" replace /> },
       { path: 'woche', element: <WeekPage /> },
       { path: 'monat', element: <MonthPage /> },
-      {
-        path: 'todos',
-        element: (
-          <div className="space-y-4">
-            <h1 className="text-xl font-bold">To-dos</h1>
-            <ComingSoon
-              icon={<ListTodo className="size-8" />}
-              title="To-do-Dashboard"
-              text="To-dos mit Fälligkeit, Priorität und Kategorie – kommt in Phase 3."
-            />
-          </div>
-        ),
-      },
+      { path: 'todos', element: <TodosPage /> },
       {
         path: 'uni',
         element: (

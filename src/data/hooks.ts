@@ -5,6 +5,7 @@ import { listHabitLogs, listHabits } from './repo/habits'
 import { getProjectNote, listProjectLogs, listProjects } from './repo/projects'
 import { getSettings } from './repo/settings'
 import { listTrainingPlans, listTrainingSessions, listTrainingTypes } from './repo/training'
+import { listTodoCategories, listTodos } from './repo/todos'
 import { getActiveSemester, listActiveModules, listAllModules, listStudyUnits } from './repo/uni'
 
 /*
@@ -38,3 +39,6 @@ export const useActiveSemester = () => useLiveQuery(getActiveSemester, [])
 export const useActiveModules = () => useLiveQuery(listActiveModules, [])
 export const useAllModules = () => useLiveQuery(listAllModules, [])
 export const useStudyUnits = () => useLiveQuery(listStudyUnits, [])
+
+export const useTodos = () => useLiveQuery(listTodos, [])
+export const useTodoCategories = () => useLiveQuery(listTodoCategories, [])

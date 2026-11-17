@@ -1,11 +1,12 @@
 import { ChevronLeft, ChevronRight, X } from 'lucide-react'
-import { useEffect, useRef } from 'react'
+import { CheckCircle, IconButton, ProgressBar, Spinner } from '../../components/ui'
+import { Sheet } from '../../components/Sheet'
 import { habitsRepo } from '../../data'
 import { dayCompletion } from '../../domain/habits'
+import { cx } from '../../lib/cx'
 import { addDaysStr, fmt, isoWeek, type DateStr } from '../../lib/dates'
 import { useToday } from '../../lib/useToday'
-import { CheckCircle, IconButton, ProgressBar, Spinner } from '../../components/ui'
-import { cx } from '../../lib/cx'
+import { DayTodos } from '../todos/DayTodos'
 import { habitsActiveOn, useHabitData } from '../week/useHabitData'
 import { DayProject, DayReading, DayStudy, DayTraining } from './DaySections'
 import { useDayPanel } from './useDayPanel'
@@ -13,50 +14,17 @@ import { useDayPanel } from './useDayPanel'
 /** Tages-Details: am Handy als Sheet von unten, am Laptop als Seitenleiste. */
 export function DayPanel() {
   const { day, show, close } = useDayPanel()
-  const panelRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!day) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close()
-    }
-    document.addEventListener('keydown', onKey)
-    const { overflow } = document.body.style
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = overflow
-    }
-  }, [day, close])
-
-  // Fokus ins Panel, wenn es aufgeht
-  const isOpen = day != null
-  useEffect(() => {
-    if (isOpen) panelRef.current?.focus()
-  }, [isOpen])
-
   if (!day) return null
-
   return (
-    <div className="fixed inset-0 z-50">
-      <div className="animate-fade absolute inset-0 bg-black/60" onClick={close} aria-hidden="true" />
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label={`Tag ${fmt(day, 'EEEE, d. MMMM')}`}
-        tabIndex={-1}
-        className={cx(
-          'animate-sheet absolute flex flex-col bg-zinc-900 shadow-2xl outline-none',
-          'inset-x-0 bottom-0 max-h-[88dvh] rounded-t-2xl border-t border-zinc-800',
-          'md:inset-y-0 md:left-auto md:right-0 md:max-h-none md:w-[420px] md:rounded-none md:border-l md:border-t-0',
-        )}
-      >
-        <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-zinc-700 md:hidden" aria-hidden="true" />
+    <Sheet
+      label={`Tag ${fmt(day, 'EEEE, d. MMMM')}`}
+      onClose={close}
+      header={
         <DayHeader day={day} onPrev={() => show(addDaysStr(day, -1))} onNext={() => show(addDaysStr(day, 1))} onClose={close} />
-        <DayBody day={day} />
-      </div>
-    </div>
+      }
+    >
+      <DayBody day={day} />
+    </Sheet>
   )
 }
 
@@ -95,13 +63,14 @@ function DayBody({ day }: { day: DateStr }) {
   const today = useToday()
   const isFuture = day > today
   return (
-    <div className="pb-safe flex-1 space-y-6 overflow-y-auto px-4 pb-8">
+    <div className="space-y-6">
       {isFuture && (
         <p className="rounded-lg bg-zinc-950/60 px-3 py-2 text-xs text-zinc-400">
-          Dieser Tag liegt in der Zukunft – Einträge sind erst ab dem Tag selbst möglich.
+          Dieser Tag liegt in der Zukunft. To-dos kannst du schon planen, Haken und Zeiten erst am Tag selbst eintragen.
         </p>
       )}
       <DayHabits day={day} />
+      <DayTodos day={day} />
       <DayTraining day={day} disabled={isFuture} />
       <DayStudy day={day} disabled={isFuture} />
       <DayReading day={day} disabled={isFuture} />
@@ -132,9 +101,7 @@ function DayHabits({ day }: { day: DateStr }) {
       {completion.ratio != null && <ProgressBar value={completion.ratio} />}
 
       {habits.length === 0 ? (
-        <p className="rounded-xl bg-zinc-950/50 p-4 text-sm text-zinc-400">
-          An diesem Tag war noch keine Gewohnheit aktiv.
-        </p>
+        <p className="rounded-xl bg-zinc-950/50 p-4 text-sm text-zinc-400">An diesem Tag war noch keine Gewohnheit aktiv.</p>
       ) : (
         <ul className="divide-y divide-zinc-800 overflow-hidden rounded-xl border border-zinc-800">
           {habits.map((h) => {
@@ -143,10 +110,7 @@ function DayHabits({ day }: { day: DateStr }) {
             return (
               <li key={h.id}>
                 <div
-                  className={cx(
-                    'flex items-center gap-3 px-3 py-2.5',
-                    !isFuture && 'cursor-pointer hover:bg-zinc-800/50',
-                  )}
+                  className={cx('flex items-center gap-3 px-3 py-2.5', !isFuture && 'cursor-pointer hover:bg-zinc-800/50')}
                   onClick={isFuture ? undefined : toggle}
                 >
                   <span className={cx('flex-1 text-sm', checked ? 'text-zinc-100' : 'text-zinc-300')}>{h.name}</span>

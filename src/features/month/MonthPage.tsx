@@ -6,6 +6,7 @@ import {
   useReadingLogs,
   useStudyLogs,
   useStudyUnits,
+  useTodos,
   useTrainingSessions,
 } from '../../data'
 import { dayCompletion } from '../../domain/habits'
@@ -64,6 +65,7 @@ export function MonthPage() {
   const training = useTrainingSessions(from, to)
   const modules = useAllModules()
   const units = useStudyUnits()
+  const todos = useTodos()
 
   const events = (() => {
     const map = new Map<DateStr, DayEvent[]>()
@@ -140,13 +142,14 @@ export function MonthPage() {
             const dayEvents = events.get(d) ?? []
             const hasExam = dayEvents.some((e) => e.kind === 'exam')
             const hasDue = dayEvents.some((e) => e.kind === 'due')
+            const openTodos = inMonth ? (todos ?? []).filter((t) => t.dueDate === d && !t.doneDate).length : 0
             const pct = r == null ? null : Math.round(r * 100)
             return (
               <button
                 key={d}
                 type="button"
                 onClick={() => open(d)}
-                aria-label={`${fmt(d, 'EEEE, d. MMMM')}${pct != null ? `, ${pct} % erfüllt` : ''}${dayEvents.map((e) => `, ${e.label}`).join('')}`}
+                aria-label={`${fmt(d, 'EEEE, d. MMMM')}${pct != null ? `, ${pct} % erfüllt` : ''}${dayEvents.map((e) => `, ${e.label}`).join('')}${openTodos > 0 ? `, ${openTodos} offene To-dos` : ''}`}
                 className={cx(
                   'relative flex aspect-square flex-col items-start justify-between rounded-lg p-1 text-left transition-transform hover:scale-[1.04] sm:p-1.5',
                   inMonth ? heatClass(r) : 'bg-transparent text-zinc-700',
@@ -162,6 +165,7 @@ export function MonthPage() {
                     <span />
                   )}
                   <span className="flex items-center gap-0.5">
+                    {openTodos > 0 && <span className="size-1.5 rounded-full bg-sky-400" title={`${openTodos} To-do(s)`} />}
                     {hasDue && <span className="size-1.5 rounded-full bg-amber-400" />}
                     {hasExam && <GraduationCap className="size-3.5 text-rose-300" />}
                   </span>
@@ -184,6 +188,9 @@ export function MonthPage() {
           </span>
           <span className="flex items-center gap-1">
             <span className="size-1.5 rounded-full bg-amber-400" /> Abgabe
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="size-1.5 rounded-full bg-sky-400" /> To-do
           </span>
         </div>
       </Card>

@@ -51,7 +51,7 @@ Jeder Push auf `main` baut die App und veröffentlicht sie über GitHub Actions 
 
 1. ✅ Grundgerüst, Datenmodell, Wochenansicht mit Tageszielen und Streaks, Tages-Panel, Einstellungen für Gewohnheiten
 2. ✅ Wochenziele (Training, Lesen, Lernen, Projekt) + Monatsansicht mit Heatmap
-3. To-do-Dashboard
+3. ✅ To-do-Dashboard (Filter, Sortierung, Kategorien; To-dos in Woche, Monat und Tages-Panel)
 4. Uni-Bereich mit Soll/Ist-Logik
 5. PWA/Offline, Export/Import, Feinschliff
 

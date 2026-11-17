@@ -2,6 +2,7 @@ import 'fake-indexeddb/auto'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { db } from './db'
 import * as habits from './repo/habits'
+import * as todos from './repo/todos'
 import * as goals from './repo/goals'
 import * as training from './repo/training'
 import * as projects from './repo/projects'
@@ -117,5 +118,31 @@ describe('projectsRepo', () => {
     await projects.setProjectNote(p.id, '2026-11-16', 'Gehäuse konstruiert')
     expect((await projects.listProjectLogs('2026-11-16', '2026-11-22'))[0].minutes).toBe(45)
     expect((await projects.getProjectNote(p.id, '2026-11-16'))?.text).toBe('Gehäuse konstruiert')
+  })
+})
+
+
+describe('todosRepo', () => {
+  it('anlegen, bearbeiten, erledigen, löschen', async () => {
+    const [uni] = await todos.listTodoCategories()
+    const id = await todos.createTodo({ title: '  Übungsblatt 5 ', dueDate: '2026-11-20', priority: 'high', categoryId: uni.id, note: '  ' })
+    let [t] = await todos.listTodos()
+    expect(t).toMatchObject({ id, title: 'Übungsblatt 5', note: null, doneDate: null })
+
+    await todos.updateTodo(id, { dueDate: null, note: 'Aufgabe 3 offen' })
+    await todos.setTodoDone(id, true, '2026-11-18')
+    ;[t] = await todos.listTodos()
+    expect(t).toMatchObject({ dueDate: null, note: 'Aufgabe 3 offen', doneDate: '2026-11-18' })
+
+    await todos.deleteTodo(id)
+    expect(await todos.listTodos()).toHaveLength(0)
+  })
+
+  it('Kategorien anlegen und archivieren', async () => {
+    const id = await todos.createTodoCategory('Haushalt')
+    await todos.setTodoCategoryArchived(id, true)
+    const cats = await todos.listTodoCategories()
+    expect(cats.map((c) => c.name)).toEqual(['Uni', 'Arbeit', 'Privat', 'Sport', 'Haushalt'])
+    expect(cats.at(-1)?.archived).toBe(true)
   })
 })
