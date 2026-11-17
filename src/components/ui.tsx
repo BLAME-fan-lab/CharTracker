@@ -166,3 +166,32 @@ export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
     />
   )
 }
+
+/** Bestätigung direkt in der Zeile (statt Browser-Dialog, der in PWAs/Einbettungen oft blockiert ist). */
+export function ConfirmBar({
+  text,
+  confirmLabel,
+  danger,
+  onConfirm,
+  onCancel,
+}: {
+  text: string
+  confirmLabel: string
+  danger?: boolean
+  onConfirm: () => void
+  onCancel: () => void
+}) {
+  return (
+    <div className="animate-fade space-y-2 bg-zinc-950/60 p-3" role="alertdialog" aria-label={text}>
+      <p className="text-sm text-zinc-200">{text}</p>
+      <div className="flex justify-end gap-2">
+        <Button variant="ghost" onClick={onCancel} autoFocus>
+          Abbrechen
+        </Button>
+        <Button variant={danger ? 'danger' : 'primary'} onClick={onConfirm}>
+          {confirmLabel}
+        </Button>
+      </div>
+    </div>
+  )
+}

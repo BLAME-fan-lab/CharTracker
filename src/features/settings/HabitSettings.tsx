@@ -2,7 +2,7 @@ import { Archive, ArchiveRestore, ArrowDown, ArrowUp, Check, Pencil, Plus, Trash
 import { useState, type FormEvent } from 'react'
 import { habitsRepo, useHabits, type Habit } from '../../data'
 import { fmt, isValidDateStr, todayStr } from '../../lib/dates'
-import { Button, Card, IconButton, Spinner, TextInput } from '../../components/ui'
+import { Button, Card, ConfirmBar, IconButton, Spinner, TextInput } from '../../components/ui'
 import { cx } from '../../lib/cx'
 
 export function HabitSettings() {
@@ -38,28 +38,7 @@ export function HabitSettings() {
           {showArchived && (
             <ul className="mt-2 divide-y divide-zinc-800 overflow-hidden rounded-xl border border-zinc-800">
               {archived.map((h) => (
-                <li key={h.id} className="flex items-center gap-2 px-3 py-2">
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm text-zinc-300">{h.name}</div>
-                    <div className="text-xs text-zinc-500">
-                      {fmt(h.activeFrom, 'dd.MM.yyyy')} – {fmt(h.archivedFrom!, 'dd.MM.yyyy')}
-                    </div>
-                  </div>
-                  <IconButton label="Wiederherstellen" onClick={() => void habitsRepo.restoreHabit(h.id)}>
-                    <ArchiveRestore className="size-4" />
-                  </IconButton>
-                  <IconButton
-                    label="Endgültig löschen"
-                    className="hover:text-rose-300"
-                    onClick={() => {
-                      if (confirm(`„${h.name}“ endgültig löschen? Alle Haken dieser Gewohnheit gehen verloren.`)) {
-                        void habitsRepo.deleteHabit(h.id)
-                      }
-                    }}
-                  >
-                    <Trash2 className="size-4" />
-                  </IconButton>
-                </li>
+                <ArchivedHabitRow key={h.id} habit={h} />
               ))}
             </ul>
           )}
@@ -76,6 +55,7 @@ export function HabitSettings() {
 
 function HabitRow({ habit, isFirst, isLast }: { habit: Habit; isFirst: boolean; isLast: boolean }) {
   const [editing, setEditing] = useState(false)
+  const [confirming, setConfirming] = useState(false)
   const [name, setName] = useState(habit.name)
   const [activeFrom, setActiveFrom] = useState(habit.activeFrom)
 
@@ -89,6 +69,19 @@ function HabitRow({ habit, isFirst, isLast }: { habit: Habit; isFirst: boolean; 
     if (!name.trim() || !isValidDateStr(activeFrom)) return
     void habitsRepo.updateHabit(habit.id, { name, activeFrom })
     setEditing(false)
+  }
+
+  if (confirming) {
+    return (
+      <li>
+        <ConfirmBar
+          text={`„${habit.name}“ archivieren? Ab heute zählt sie nicht mehr, vergangene Tage bleiben erhalten.`}
+          confirmLabel="Archivieren"
+          onConfirm={() => void habitsRepo.archiveHabit(habit.id)}
+          onCancel={() => setConfirming(false)}
+        />
+      </li>
+    )
   }
 
   if (editing) {
@@ -134,15 +127,41 @@ function HabitRow({ habit, isFirst, isLast }: { habit: Habit; isFirst: boolean; 
       <IconButton label="Bearbeiten" onClick={startEdit}>
         <Pencil className="size-4" />
       </IconButton>
-      <IconButton
-        label="Archivieren"
-        onClick={() => {
-          if (confirm(`„${habit.name}“ archivieren? Ab heute zählt die Gewohnheit nicht mehr, vergangene Tage bleiben erhalten.`)) {
-            void habitsRepo.archiveHabit(habit.id)
-          }
-        }}
-      >
+      <IconButton label="Archivieren" onClick={() => setConfirming(true)}>
         <Archive className="size-4" />
+      </IconButton>
+    </li>
+  )
+}
+
+function ArchivedHabitRow({ habit }: { habit: Habit }) {
+  const [confirming, setConfirming] = useState(false)
+  if (confirming) {
+    return (
+      <li>
+        <ConfirmBar
+          text={`„${habit.name}“ endgültig löschen? Alle Haken dieser Gewohnheit gehen verloren.`}
+          confirmLabel="Löschen"
+          danger
+          onConfirm={() => void habitsRepo.deleteHabit(habit.id)}
+          onCancel={() => setConfirming(false)}
+        />
+      </li>
+    )
+  }
+  return (
+    <li className="flex items-center gap-2 px-3 py-2">
+      <div className="min-w-0 flex-1">
+        <div className="text-sm leading-snug break-words text-zinc-300">{habit.name}</div>
+        <div className="text-xs text-zinc-500">
+          {fmt(habit.activeFrom, 'dd.MM.yyyy')} – {fmt(habit.archivedFrom!, 'dd.MM.yyyy')}
+        </div>
+      </div>
+      <IconButton label="Wiederherstellen" onClick={() => void habitsRepo.restoreHabit(habit.id)}>
+        <ArchiveRestore className="size-4" />
+      </IconButton>
+      <IconButton label="Endgültig löschen" className="hover:text-rose-300" onClick={() => setConfirming(true)}>
+        <Trash2 className="size-4" />
       </IconButton>
     </li>
   )
