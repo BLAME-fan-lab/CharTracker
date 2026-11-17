@@ -192,6 +192,10 @@ export interface AppSettings extends BaseRecord {
   trackingStart: DateStr
   /** Zeitpunkt des letzten Exports (ms), für die Backup-Erinnerung */
   lastBackupAt?: number | null
+  /** Zuletzt gesehene Level – für Level-Up-Hinweise */
+  levelSnapshot?: { character: number; skills: Record<string, number> } | null
+  /** Errungenschaft-ID → Tag, an dem sie zuerst erreicht wurde */
+  achievementDates?: Record<string, DateStr>
 }
 
 /* ---------- Charakter ---------- */

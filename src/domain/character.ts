@@ -42,13 +42,28 @@ export interface GradeEntry {
   ects: number
 }
 
-/** ECTS-gewichteter Durchschnitt der bestandenen Noten (≤ 4,0) → Level. */
-export function academicLevel(grades: readonly GradeEntry[]): { level: number; average: number | null; ects: number; count: number } {
+/** Studienfortschritt: 60 ECTS → 63 %, 180 ECTS (Bachelor) → 95 %, 300 ECTS (Master) → 99 % */
+export const studyProgressFactor = (ects: number) => 1 - Math.exp(-Math.max(0, ects) / 60)
+
+/**
+ * Akademisch = Level des ECTS-gewichteten Notenschnitts (nur bestandene, ≤ 4,0) × Studienfortschritt.
+ * So bringt eine einzelne 1,0 noch keine 1000 – erst ein ganzes Studium mit Bestnoten nähert sich ihr.
+ */
+export function academicLevel(grades: readonly GradeEntry[]): {
+  level: number
+  average: number | null
+  gradeLevel: number
+  factor: number
+  ects: number
+  count: number
+} {
   const passed = grades.filter((g) => g.grade >= 1 && g.grade <= 4 && g.ects > 0)
   const ects = passed.reduce((a, g) => a + g.ects, 0)
-  if (ects === 0) return { level: 0, average: null, ects: 0, count: 0 }
+  if (ects === 0) return { level: 0, average: null, gradeLevel: 0, factor: 0, ects: 0, count: 0 }
   const average = passed.reduce((a, g) => a + g.grade * g.ects, 0) / ects
-  return { level: gradeToLevel(average), average, ects, count: passed.length }
+  const gradeLevel = gradeToLevel(average)
+  const factor = studyProgressFactor(ects)
+  return { level: clamp(gradeLevel * factor), average, gradeLevel, factor, ects, count: passed.length }
 }
 
 /* ---------- Sport ---------- */

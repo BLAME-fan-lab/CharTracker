@@ -60,8 +60,16 @@ describe('Akademisch', () => {
     ])
     expect(r.average).toBeCloseTo(1.35)
     expect(r.count).toBe(2)
-    expect(r.level).toBeCloseTo(912.5)
+    expect(r.gradeLevel).toBeCloseTo(912.5)
+    expect(r.level).toBeCloseTo(912.5 * (1 - Math.exp(-10 / 60)))
     expect(academicLevel([]).level).toBe(0)
+  })
+  it('1000 nur annähernd: eine 1,0 reicht nicht, ein ganzes Studium fast', () => {
+    expect(academicLevel([{ grade: 1.0, ects: 5 }]).level).toBeLessThan(100)
+    const bachelor = academicLevel([{ grade: 1.0, ects: 180 }]).level
+    expect(bachelor).toBeGreaterThan(945)
+    expect(bachelor).toBeLessThan(955)
+    expect(displayLevel(academicLevel([{ grade: 1.0, ects: 300 }]).level)).toBe(993)
   })
 })
 

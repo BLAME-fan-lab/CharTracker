@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import {
   useActiveModules,
   useAllProjectLogs,
+  useAllStudyLogs,
   useAllReadingLogs,
   useAllTrainingSessions,
   useBodyLogs,
@@ -17,6 +18,8 @@ import {
   useProjectMilestones,
   useRunLogs,
   useSettings,
+  useStudyUnits,
+  useTodos,
   useTrainingPlans,
 } from '../../data'
 import { computeCharacter, type CharacterSheet } from '../../domain/characterSheet'
@@ -42,12 +45,15 @@ export function useCharacter(today: DateStr): CharacterSheet | undefined {
   const musicLogs = useMusicLogs()
   const projectLogs = useAllProjectLogs()
   const projectMilestones = useProjectMilestones()
+  const studyLogs = useAllStudyLogs()
+  const studyUnits = useStudyUnits()
+  const todos = useTodos()
 
   return useMemo(() => {
     if (
       !settings || !habits || !habitLogs || !trainingPlans || !trainingSessions || !goalTargets || !readingLogs ||
       !books || !modules || !pastGrades || !bodyLogs || !exercises || !liftLogs || !runLogs || !musicLogs ||
-      !projectLogs || !projectMilestones
+      !projectLogs || !projectMilestones || !studyLogs || !studyUnits || !todos
     ) {
       return undefined
     }
@@ -71,9 +77,14 @@ export function useCharacter(today: DateStr): CharacterSheet | undefined {
       musicLogs,
       projectLogs,
       projectMilestones,
+      studyLogs,
+      studyUnits,
+      todos,
+      lastBackupAt: settings.lastBackupAt ?? null,
     })
   }, [
     today, settings, habits, habitLogs, trainingPlans, trainingSessions, goalTargets, readingLogs, books, modules,
     pastGrades, profile, bodyLogs, exercises, liftLogs, runLogs, musicLogs, projectLogs, projectMilestones,
+    studyLogs, studyUnits, todos,
   ])
 }

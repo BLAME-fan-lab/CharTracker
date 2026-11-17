@@ -26,7 +26,7 @@ export const SKILL_COLOR: Record<SkillKey, { text: string; bar: string; ring: st
 /** Kurze Erklärung, wie das Level entsteht (wird auf der Detailseite gezeigt). */
 export const SKILL_RULES: Record<SkillKey, string> = {
   academic:
-    'Notendurchschnitt aller bestandenen Module, gewichtet nach ECTS. 1,0 → 1000, 2,0 → 750, 3,0 → 500, 4,0 → 250. Nicht bestandene Prüfungen zählen nicht, bis sie bestanden sind.',
+    'Notenschnitt (ECTS-gewichtet, nur bestandene Module) × Studienfortschritt. Schnitt: 1,0 → 1000, 2,0 → 750, 3,0 → 500, 4,0 → 250. Fortschritt wächst mit deinen ECTS: 60 ECTS → 63 %, Bachelor (180) → 95 %, Master (300) → 99 %. So bringt eine einzelne 1,0 noch keine 1000.',
   sport:
     '60 % Leistung + 40 % Trainingskonstanz. Leistung: dein bester Wert je Übung (geschätztes Maximalgewicht im Verhältnis zum Körpergewicht) gegen Kraft-Standards – Anfänger 150, Mittel 500, Elite 850, darüber nur noch langsam Richtung 1000. Werte älter als 8 Wochen verlieren pro Woche 1 %. Konstanz: Erfüllung deines Trainingsplans pro Woche, ein Jahr durchgehend → 900.',
   health:
@@ -39,4 +39,15 @@ export const SKILL_RULES: Record<SkillKey, string> = {
     'Dein Meilenstein auf der Leiter (bestätigst du selbst) ist das Mindestlevel. Übungsstunden heben dich innerhalb der Stufe, aber nie über den nächsten Meilenstein. Rund 10.000 Stunden für Profi-Niveau.',
   project:
     '40 % Erfahrung (Stunden, ~10.000 h für Profi-Niveau) + 35 % erreichte Meilensteine (klein 1, mittel 3, groß 8 Punkte) + 25 % Konstanz (Wochen mit mindestens 3 h Projektzeit).',
+}
+
+/** Hex-Farben pro Baum (für SVG-Grafiken) */
+export const SKILL_HEX: Record<SkillKey, string> = {
+  academic: '#a78bfa',
+  sport: '#38bdf8',
+  health: '#fb7185',
+  hygiene: '#2dd4bf',
+  reading: '#fbbf24',
+  music: '#e879f9',
+  project: '#fb923c',
 }

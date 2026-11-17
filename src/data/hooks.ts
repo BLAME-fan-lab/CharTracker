@@ -1,6 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import type { DateStr } from '../lib/dates'
-import { listAllReadingLogs, listGoalTargets, listReadingLogs, listStudyLogs } from './repo/goals'
+import { listAllReadingLogs, listAllStudyLogs, listGoalTargets, listReadingLogs, listStudyLogs } from './repo/goals'
 import { listHabitLogs, listHabits } from './repo/habits'
 import { getProjectNote, listAllProjectLogs, listProjectLogs, listProjects } from './repo/projects'
 import { getSettings } from './repo/settings'
@@ -68,3 +68,4 @@ export const useBooks = () => useLiveQuery(listBooks, [])
 export const useMusicLogs = () => useLiveQuery(listMusicLogs, [])
 export const useProjectMilestones = () => useLiveQuery(listProjectMilestones, [])
 export const usePastGrades = () => useLiveQuery(listPastGrades, [])
+export const useAllStudyLogs = () => useLiveQuery(listAllStudyLogs, [])

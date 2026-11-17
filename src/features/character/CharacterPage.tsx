@@ -1,12 +1,15 @@
-import { ChevronRight } from 'lucide-react'
+import { ChevronRight, Lock, Trophy } from 'lucide-react'
 import { Link } from 'react-router'
-import { Spinner } from '../../components/ui'
+import { Card, Spinner } from '../../components/ui'
+import { useSettings } from '../../data'
+import { evaluateAchievements } from '../../domain/achievements'
 import { displayLevel, MAX_LEVEL } from '../../domain/character'
-import { SKILL_NAMES, type SkillResult } from '../../domain/characterSheet'
+import { SKILL_NAMES, type CharacterSheet, type SkillResult } from '../../domain/characterSheet'
 import { cx } from '../../lib/cx'
 import { useToday } from '../../lib/useToday'
 import { SKILL_COLOR, SKILL_ICON } from './skillMeta'
 import { useCharacter } from './useCharacter'
+import { NextRankText, RankBadge, SkillRadar } from './visuals'
 
 export function CharacterPage() {
   const today = useToday()
@@ -42,9 +45,10 @@ export function CharacterPage() {
             </div>
           </div>
         </div>
-        <div className="min-w-0 space-y-1 text-sm">
+        <div className="min-w-0 space-y-1.5 text-sm">
           <div className="text-xs tracking-wide text-zinc-400 uppercase">Charakterlevel</div>
-          <p className="text-zinc-300">Durchschnitt deiner 7 Skill-Bäume.</p>
+          <RankBadge level={sheet.level} size="md" />
+          <NextRankText level={sheet.level} className="block text-xs text-zinc-400" />
           <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-zinc-400">
             {sheet.age != null && <span>{sheet.age} Jahre</span>}
             {sheet.weightKg != null && <span>{sheet.weightKg.toLocaleString('de-DE')} kg</span>}
@@ -58,6 +62,14 @@ export function CharacterPage() {
         </div>
       </section>
 
+      <Card title="Skill-Netz">
+        <div className="flex justify-center">
+          <SkillRadar skills={sheet.skills} characterLevel={sheet.level} />
+        </div>
+      </Card>
+
+      <AchievementSummary sheet={sheet} />
+
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {sheet.skills.map((s) => (
           <SkillCard key={s.key} skill={s} />
@@ -69,6 +81,48 @@ export function CharacterPage() {
         Tippe einen Baum an, um zu sehen, wie er berechnet wird, und um Werte einzutragen.
       </p>
     </div>
+  )
+}
+
+function AchievementSummary({ sheet }: { sheet: CharacterSheet }) {
+  const settings = useSettings()
+  const states = evaluateAchievements(sheet.stats)
+  const dates = settings?.achievementDates ?? {}
+  const unlocked = states.filter((s) => s.unlocked)
+  const recent = [...unlocked].sort((a, b) => (dates[b.achievement.id] ?? '').localeCompare(dates[a.achievement.id] ?? '')).slice(0, 3)
+  const next = states
+    .filter((s) => !s.unlocked)
+    .sort((a, b) => b.current / b.target - a.current / a.target)
+    .slice(0, 2)
+  return (
+    <Card
+      title={
+        <span className="flex items-center gap-2">
+          <Trophy className="size-4 text-amber-300" /> Errungenschaften · {unlocked.length}/{states.length}
+        </span>
+      }
+      action={
+        <Link to="/charakter/erfolge" className="inline-flex items-center text-xs text-zinc-400 hover:text-zinc-200">
+          Alle <ChevronRight className="size-3.5" />
+        </Link>
+      }
+    >
+      <ul className="space-y-1.5 text-sm">
+        {recent.map((s) => (
+          <li key={s.achievement.id} className="flex items-center gap-2">
+            <Trophy className="size-3.5 shrink-0 text-amber-300" />
+            <span className="text-amber-100">{s.achievement.title}</span>
+          </li>
+        ))}
+        {next.map((s) => (
+          <li key={s.achievement.id} className="flex items-center gap-2 text-zinc-400">
+            <Lock className="size-3.5 shrink-0" />
+            <span className="min-w-0 flex-1 truncate">{s.achievement.title}</span>
+            <span className="text-xs tabular-nums">{Math.round((s.current / s.target) * 100)} %</span>
+          </li>
+        ))}
+      </ul>
+    </Card>
   )
 }
 
@@ -86,7 +140,10 @@ function SkillCard({ skill }: { skill: SkillResult }) {
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="truncate font-semibold">{SKILL_NAMES[skill.key]}</span>
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="truncate font-semibold">{SKILL_NAMES[skill.key]}</span>
+              <RankBadge level={skill.level} />
+            </span>
             <span className={cx('text-lg font-bold tabular-nums', color.text)}>{level}</span>
           </div>
           <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-zinc-800">

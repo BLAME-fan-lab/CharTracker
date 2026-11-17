@@ -26,6 +26,10 @@ function input(patch: Partial<CharacterInput> = {}): CharacterInput {
     musicLogs: [],
     projectLogs: [],
     projectMilestones: [],
+    studyLogs: [],
+    studyUnits: [],
+    todos: [],
+    lastBackupAt: null,
     ...patch,
   }
 }
@@ -64,7 +68,7 @@ describe('computeCharacter', () => {
         ],
       }),
     )
-    expect(level(s, 'academic')).toBeCloseTo(912.5)
+    expect(level(s, 'academic')).toBeCloseTo(912.5 * (1 - Math.exp(-10 / 60)))
   })
 
   it('Hygiene steigt mit erledigten Routinen über Zeit', () => {

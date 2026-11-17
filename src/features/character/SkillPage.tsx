@@ -1,6 +1,8 @@
 import { ChevronLeft, Info } from 'lucide-react'
 import { Link, useParams } from 'react-router'
 import { Card, Spinner } from '../../components/ui'
+import { useSettings } from '../../data'
+import { evaluateAchievements, type AchievementCategory } from '../../domain/achievements'
 import { displayLevel, MAX_LEVEL } from '../../domain/character'
 import { SKILL_NAMES, SKILL_ORDER, type SkillKey } from '../../domain/characterSheet'
 import { cx } from '../../lib/cx'
@@ -12,13 +14,25 @@ import { MusicEditor } from './editors/MusicEditor'
 import { ProjectEditor } from './editors/ProjectEditor'
 import { ReadingEditor } from './editors/ReadingEditor'
 import { SportEditor } from './editors/SportEditor'
-import { SKILL_COLOR, SKILL_ICON, SKILL_RULES } from './skillMeta'
+import { SKILL_COLOR, SKILL_HEX, SKILL_ICON, SKILL_RULES } from './skillMeta'
+import { AchievementGrid, RankTrack } from './visuals'
 import { useCharacter } from './useCharacter'
+
+const SKILL_CATEGORY: Record<SkillKey, AchievementCategory> = {
+  academic: 'uni',
+  sport: 'sport',
+  health: 'routine',
+  hygiene: 'routine',
+  reading: 'reading',
+  music: 'music',
+  project: 'project',
+}
 
 export function SkillPage() {
   const { skill } = useParams()
   const today = useToday()
   const sheet = useCharacter(today)
+  const settings = useSettings()
   const key = SKILL_ORDER.includes(skill as SkillKey) ? (skill as SkillKey) : null
 
   const back = (
@@ -52,6 +66,10 @@ export function SkillPage() {
       </div>
 
       <Card>
+        <RankTrack level={result.level} color={SKILL_HEX[key]} />
+      </Card>
+
+      <Card>
         <dl className="grid gap-x-4 gap-y-2 sm:grid-cols-2">
           {result.details.map((d) => (
             <div key={d.label} className="min-w-0">
@@ -74,6 +92,13 @@ export function SkillPage() {
       {key === 'reading' && <ReadingEditor today={today} />}
       {key === 'music' && <MusicEditor />}
       {key === 'project' && <ProjectEditor today={today} />}
+
+      <Card title="Errungenschaften">
+        <AchievementGrid
+          items={evaluateAchievements(sheet.stats).filter((a) => a.achievement.category === SKILL_CATEGORY[key])}
+          dates={settings?.achievementDates ?? {}}
+        />
+      </Card>
     </div>
   )
 }

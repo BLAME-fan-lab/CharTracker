@@ -22,6 +22,10 @@ const router = createHashRouter([
         lazy: () => import('./features/character/CharacterPage').then((m) => ({ Component: m.CharacterPage })),
       },
       {
+        path: 'charakter/erfolge',
+        lazy: () => import('./features/character/AchievementsPage').then((m) => ({ Component: m.AchievementsPage })),
+      },
+      {
         path: 'charakter/:skill',
         lazy: () => import('./features/character/SkillPage').then((m) => ({ Component: m.SkillPage })),
       },

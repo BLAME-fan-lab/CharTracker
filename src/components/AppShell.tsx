@@ -2,6 +2,7 @@ import { CalendarDays, GraduationCap, ListTodo, Settings, Swords } from 'lucide-
 import type { ReactNode } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { DayPanel } from '../features/day/DayPanel'
+import { ProgressCelebration } from './ProgressCelebration'
 import { UpdatePrompt } from './UpdatePrompt'
 import { cx } from '../lib/cx'
 
@@ -70,6 +71,7 @@ export function AppShell() {
 
       <DayPanel />
       <UpdatePrompt />
+      <ProgressCelebration />
     </div>
   )
 }

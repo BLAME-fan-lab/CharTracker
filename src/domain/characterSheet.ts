@@ -15,6 +15,9 @@ import type {
   ProjectMilestone,
   ReadingLog,
   RunLog,
+  StudyLog,
+  StudyUnit,
+  Todo,
   TrainingPlan,
   TrainingSession,
 } from '../data/types'
@@ -29,21 +32,25 @@ import {
   DAILY_UP,
   detrainingFactor,
   disciplineLevel,
+  estimate1RM,
   fiveKEquivalent,
   healthLevel,
   liftLevel,
   MILESTONE_POINTS,
   musicLevel,
   projectLevel,
+  pullupEquivalentReps,
   readingLevel,
   runLevel,
   sportLevel,
+  STRENGTH_STANDARDS,
   WEEKLY_DOWN,
   WEEKLY_UP,
   type Difficulty,
   type SexKey,
 } from './character'
-import { DoneIndex, isHabitActiveOn } from './habits'
+import { bestFullStreak, type AchievementStats } from './achievements'
+import { bestHabitStreak, bestPerfectDayStreak, DoneIndex, isHabitActiveOn } from './habits'
 import { trainingProgress, versionForWeek } from './weekly'
 
 export type SkillKey = 'academic' | 'sport' | 'health' | 'hygiene' | 'reading' | 'music' | 'project'
@@ -93,6 +100,10 @@ export interface CharacterInput {
   musicLogs: MusicLog[]
   projectLogs: ProjectLog[]
   projectMilestones: ProjectMilestone[]
+  studyLogs: StudyLog[]
+  studyUnits: StudyUnit[]
+  todos: Todo[]
+  lastBackupAt: number | null
 }
 
 export interface CharacterSheet {
@@ -101,6 +112,8 @@ export interface CharacterSheet {
   age: number | null
   weightKg: number | null
   bmi: number | null
+  /** Kennzahlen für die Errungenschaften */
+  stats: AchievementStats
 }
 
 /* ---------- Zuordnung der Gewohnheiten ---------- */
@@ -167,6 +180,9 @@ export function computeCharacter(input: CharacterInput): CharacterSheet {
     : null
 
   const skills: SkillResult[] = []
+  let trainingSeries: (number | null)[] = []
+  let readingSeries: (number | null)[] = []
+  let bestGrade: number | null = null
 
   /* Akademisch */
   {
@@ -175,12 +191,15 @@ export function computeCharacter(input: CharacterInput): CharacterSheet {
       ...input.modules.filter((m) => m.grade != null).map((m) => ({ grade: m.grade!, ects: m.ects ?? 5 })),
     ]
     const r = academicLevel(grades)
+    const passed = grades.filter((g) => g.grade >= 1 && g.grade <= 4).map((g) => g.grade)
+    bestGrade = passed.length ? Math.min(...passed) : null
     skills.push({
       key: 'academic',
       level: r.level,
       details: [
-        { label: 'Notendurchschnitt', value: r.average == null ? '–' : fmt1(Math.round(r.average * 100) / 100) },
-        { label: 'Bewertete Module', value: `${r.count} (${r.ects} ECTS)` },
+        { label: 'Notendurchschnitt', value: r.average == null ? '–' : `${r.average.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} (entspricht ${Math.floor(r.gradeLevel)})` },
+        { label: 'Studienfortschritt', value: `${r.ects} ECTS → ${Math.round(r.factor * 100)} %` },
+        { label: 'Bewertete Module', value: `${r.count}` },
       ],
       hint: r.count === 0 ? 'Trag deine bisherigen Noten ein (Charakter → Akademisch).' : null,
     })
@@ -211,13 +230,13 @@ export function computeCharacter(input: CharacterInput): CharacterSheet {
       perf.push(level)
       details.push({ label: 'Ausdauer (5 km)', value: `${Math.floor(level)}` })
     }
-    const series = weeklySeries(start, today, (monday) => {
+    trainingSeries = weeklySeries(start, today, (monday) => {
       const plan = versionForWeek(input.trainingPlans, monday)
       const sessions = input.trainingSessions.filter((s) => inWeek(s.date, monday))
       const p = trainingProgress(plan?.targets ?? [], sessions)
       return p.target > 0 ? p.done / p.target : null
     })
-    const consistency = disciplineLevel(series, WEEKLY_UP, WEEKLY_DOWN)
+    const consistency = disciplineLevel(trainingSeries, WEEKLY_UP, WEEKLY_DOWN)
     const r = sportLevel(perf, consistency)
     skills.push({
       key: 'sport',
@@ -274,12 +293,12 @@ export function computeCharacter(input: CharacterInput): CharacterSheet {
     const minutes: Record<Difficulty, number> = { easy: 0, medium: 0, hard: 0 }
     for (const l of input.readingLogs) if (l.date <= today) minutes[difficultyOf(l)] += l.minutes
     const readingTargets = input.goalTargets.filter((t) => t.kind === 'reading')
-    const series = weeklySeries(start, today, (monday) => {
+    readingSeries = weeklySeries(start, today, (monday) => {
       const target = versionForWeek(readingTargets, monday)?.minutes ?? 0
       if (target <= 0) return null
       return sumBy(input.readingLogs.filter((l) => inWeek(l.date, monday)), (l) => l.minutes) / target
     })
-    const discipline = disciplineLevel(series, WEEKLY_UP, WEEKLY_DOWN)
+    const discipline = disciplineLevel(readingSeries, WEEKLY_UP, WEEKLY_DOWN)
     const r = readingLevel(minutes, discipline)
     const total = minutes.easy + minutes.medium + minutes.hard
     skills.push({
@@ -329,11 +348,84 @@ export function computeCharacter(input: CharacterInput): CharacterSheet {
     })
   }
 
+  const level = characterLevel(skills.map((s) => s.level))
   return {
-    level: characterLevel(skills.map((s) => s.level)),
+    level,
     skills,
     age,
     weightKg,
     bmi: bmiValue,
+    stats: achievementStats(input, { done, weightKg, sex, trainingSeries, readingSeries, bestGrade, level, skills }),
+  }
+}
+
+/* ---------- Kennzahlen für Errungenschaften ---------- */
+
+function achievementStats(
+  input: CharacterInput,
+  ctx: {
+    done: DoneIndex
+    weightKg: number | null
+    sex: SexKey
+    trainingSeries: (number | null)[]
+    readingSeries: (number | null)[]
+    bestGrade: number | null
+    level: number
+    skills: SkillResult[]
+  },
+): AchievementStats {
+  const { today } = input
+  const past = <T extends { date: DateStr }>(items: readonly T[]) => items.filter((i) => i.date <= today)
+
+  // Kraft: bester Wert je Übung (ohne Abwertung – Errungenschaften bleiben)
+  let benchRatio = 0
+  let pullups = 0
+  let bestStandard = 0
+  for (const ex of input.exercises.filter((e) => e.standard)) {
+    const logs = past(input.liftLogs).filter((l) => l.exerciseId === ex.id)
+    if (logs.length === 0) continue
+    const value =
+      ex.standard === 'pullup'
+        ? Math.max(...logs.map((l) => (ctx.weightKg ? pullupEquivalentReps(l.reps, l.weightKg, ctx.weightKg) : l.reps)))
+        : ctx.weightKg
+          ? Math.max(...logs.map((l) => estimate1RM(l.weightKg, l.reps))) / ctx.weightKg
+          : 0
+    if (ex.standard === 'bench') benchRatio = Math.max(benchRatio, value)
+    if (ex.standard === 'pullup') pullups = Math.max(pullups, Math.floor(value))
+    const reached = STRENGTH_STANDARDS[ex.standard!][ctx.sex].filter((t) => value >= t).length
+    bestStandard = Math.max(bestStandard, reached)
+  }
+
+  const activeModuleIds = new Set(input.modules.map((m) => m.id))
+  const modulesComplete = input.modules.filter((m) => {
+    const units = input.studyUnits.filter((u) => u.moduleId === m.id)
+    return units.length > 0 && units.every((u) => u.doneDate)
+  }).length
+  const doneMilestones = input.projectMilestones.filter((m) => m.doneDate)
+
+  return {
+    bestPerfectStreak: bestPerfectDayStreak(input.habits, ctx.done, today),
+    bestHabitStreak: input.habits.reduce((m, h) => Math.max(m, bestHabitStreak(h, ctx.done, today)), 0),
+    studyHours: sumBy(past(input.studyLogs), (l) => l.minutes) / 60,
+    unitsDone: input.studyUnits.filter((u) => u.doneDate && activeModuleIds.has(u.moduleId)).length,
+    modulesComplete,
+    bestGrade: ctx.bestGrade,
+    trainings: past(input.trainingSessions).length,
+    bestTrainingWeekStreak: bestFullStreak(ctx.trainingSeries),
+    benchRatio,
+    pullups,
+    bestStandard,
+    booksDone: input.books.filter((b) => b.status === 'done').length,
+    hardBooksDone: input.books.filter((b) => b.status === 'done' && b.difficulty === 'hard').length,
+    bestReadingWeekStreak: bestFullStreak(ctx.readingSeries),
+    musicHours: sumBy(past(input.musicLogs), (l) => l.minutes) / 60,
+    musicMilestone: input.profile?.musicMilestone ?? 0,
+    projectMilestones: doneMilestones.length,
+    largeMilestones: doneMilestones.filter((m) => m.size === 'large').length,
+    projectHours: sumBy(past(input.projectLogs), (l) => l.minutes) / 60,
+    todosDone: input.todos.filter((t) => t.doneDate).length,
+    characterLevel: ctx.level,
+    maxSkillLevel: Math.max(0, ...ctx.skills.map((s) => s.level)),
+    hasBackup: input.lastBackupAt != null,
   }
 }

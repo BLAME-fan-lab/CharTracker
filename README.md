@@ -74,7 +74,7 @@ Probeklausur) oder Präfix (`Sonstiges:`).
 5. ✅ PWA (installierbar, offline), Backup per Export/Import (Datei, Teilen, Kopieren; Ersetzen oder Zusammenführen), Backup-Erinnerung, Update-Hinweis
 
 6. ✅ Charakter (6a): 7 Skill-Bäume auf einer Skala 0–1000, Charakterlevel = Durchschnitt
-   - Akademisch: ECTS-gewichteter Notendurchschnitt (1,0 → 1000, 4,0 → 250)
+   - Akademisch: ECTS-gewichteter Notenschnitt (1,0 → 1000, 4,0 → 250) × Studienfortschritt (60 ECTS → 63 %, 180 → 95 %)
    - Sportlich: 60 % Leistung (1RM bzw. Klimmzüge relativ zum Körpergewicht gegen Kraft-Standards, 5-km-Zeit) + 40 % Trainingskonstanz
    - Gesundheit: 70 % Routinen-Disziplin + 30 % Körperwerte (BMI, Körperfett)
    - Hygiene & Pflege: Routinen-Disziplin (1 Jahr durchgehend → 900, Nachlassen senkt halb so schnell)
@@ -82,6 +82,8 @@ Probeklausur) oder Präfix (`Sonstiges:`).
    - Musikalisch: Meilenstein-Leiter Klavier + Übungsstunden
    - Projekt: Stunden, Meilensteine (klein/mittel/groß), Konstanz
    - Gewohnheiten können nur an bestimmten Wochentagen gelten (z. B. samstags)
-   - 6b (geplant): Ränge, Errungenschaften, Level-Up-Animation, Avatar
+7. ✅ Belohnungen (6b): Ränge je 100 Level (Novize … Legende), Skill-Netz (Siebeneck), Rang-Pfad pro Baum,
+   40 Errungenschaften (aus den Daten berechnet, Datum der ersten Erreichung gespeichert),
+   Level-Up-Feier bei Rangaufstieg/Errungenschaft und Hinweis bei steigendem Charakterlevel
 
 Später: Strong-CSV-Import (Workouts, Gewichtsverlauf, PRs), Sync über Supabase.
