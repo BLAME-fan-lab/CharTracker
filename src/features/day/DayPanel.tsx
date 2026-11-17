@@ -7,6 +7,7 @@ import { useToday } from '../../lib/useToday'
 import { CheckCircle, IconButton, ProgressBar, Spinner } from '../../components/ui'
 import { cx } from '../../lib/cx'
 import { habitsActiveOn, useHabitData } from '../week/useHabitData'
+import { DayProject, DayReading, DayStudy, DayTraining } from './DaySections'
 import { useDayPanel } from './useDayPanel'
 
 /** Tages-Details: am Handy als Sheet von unten, am Laptop als Seitenleiste. */
@@ -53,9 +54,7 @@ export function DayPanel() {
       >
         <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-zinc-700 md:hidden" aria-hidden="true" />
         <DayHeader day={day} onPrev={() => show(addDaysStr(day, -1))} onNext={() => show(addDaysStr(day, 1))} onClose={close} />
-        <div className="pb-safe flex-1 overflow-y-auto px-4 pb-6">
-          <DayHabits day={day} />
-        </div>
+        <DayBody day={day} />
       </div>
     </div>
   )
@@ -89,6 +88,25 @@ function DayHeader({ day, onPrev, onNext, onClose }: {
         <X className="size-5" />
       </IconButton>
     </header>
+  )
+}
+
+function DayBody({ day }: { day: DateStr }) {
+  const today = useToday()
+  const isFuture = day > today
+  return (
+    <div className="pb-safe flex-1 space-y-6 overflow-y-auto px-4 pb-8">
+      {isFuture && (
+        <p className="rounded-lg bg-zinc-950/60 px-3 py-2 text-xs text-zinc-400">
+          Dieser Tag liegt in der Zukunft – Einträge sind erst ab dem Tag selbst möglich.
+        </p>
+      )}
+      <DayHabits day={day} />
+      <DayTraining day={day} disabled={isFuture} />
+      <DayStudy day={day} disabled={isFuture} />
+      <DayReading day={day} disabled={isFuture} />
+      <DayProject day={day} disabled={isFuture} />
+    </div>
   )
 }
 
@@ -140,9 +158,6 @@ function DayHabits({ day }: { day: DateStr }) {
             )
           })}
         </ul>
-      )}
-      {isFuture && habits.length > 0 && (
-        <p className="text-xs text-zinc-500">Zukünftige Tage können noch nicht abgehakt werden.</p>
       )}
     </section>
   )

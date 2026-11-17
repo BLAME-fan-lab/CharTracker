@@ -22,7 +22,7 @@ Jeder Push auf `main` baut die App und veröffentlicht sie über GitHub Actions 
 |---|---|
 | `src/lib/` | Datums- und Dauer-Hilfen (`DateStr` = `'YYYY-MM-DD'`, lokale Kalendertage) |
 | `src/data/` | Datenschicht: Typen, Dexie-Schema, Startdaten, Repositories, Lese-Hooks |
-| `src/domain/` | Reine Fachlogik (Streaks, Erfüllungsgrad, später Wochenziele und Soll/Ist) – mit Tests |
+| `src/domain/` | Reine Fachlogik (Streaks, Erfüllungsgrad, Wochenziele, später Soll/Ist) – mit Tests |
 | `src/features/` | Seiten und Bereiche der Oberfläche |
 | `src/components/` | Layout und UI-Bausteine |
 
@@ -36,7 +36,8 @@ Jeder Push auf `main` baut die App und veröffentlicht sie über GitHub Actions 
 
 ## Fachliche Regeln
 
-- Woche beginnt Montag.
+- Woche beginnt Montag. Einträge (Haken, Zeiten, Training) sind nur bis heute möglich, nicht für zukünftige Tage.
+- **Zeiteingabe:** Lernen/Projekt in h:mm („1:30“, „1,30“ = 1:30; „1,5“ = 1,5 h; „2“ = 2 h), Lesen in Minuten.
 - **Gewohnheiten:** Archivieren statt Löschen; eine Gewohnheit zählt von `activeFrom` bis vor `archivedFrom`.
   Erfüllungsgrad eines Tages = erledigte / an dem Tag aktive Gewohnheiten.
 - **Streak:** Tage am Stück; ein heute noch offener Tag bricht die Serie nicht. Gesamt-Streak = „perfekte Tage“
@@ -49,7 +50,7 @@ Jeder Push auf `main` baut die App und veröffentlicht sie über GitHub Actions 
 ## Phasen
 
 1. ✅ Grundgerüst, Datenmodell, Wochenansicht mit Tageszielen und Streaks, Tages-Panel, Einstellungen für Gewohnheiten
-2. Wochenziele (Training, Lesen, Lernen, Projekt) + Monatsansicht mit Heatmap
+2. ✅ Wochenziele (Training, Lesen, Lernen, Projekt) + Monatsansicht mit Heatmap
 3. To-do-Dashboard
 4. Uni-Bereich mit Soll/Ist-Logik
 5. PWA/Offline, Export/Import, Feinschliff

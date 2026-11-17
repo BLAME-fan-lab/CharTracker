@@ -160,7 +160,9 @@ export function TextInput(props: InputHTMLAttributes<HTMLInputElement>) {
     <input
       {...rest}
       className={cx(
-        'min-h-9 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-500 focus:outline-none',
+        'min-h-9 rounded-lg border border-zinc-700 bg-zinc-950 px-3 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-emerald-500 focus:outline-none',
+        // Standard volle Breite, außer es wird eine eigene Breite übergeben
+        /(^|\s)(w-|max-w-)/.test(className ?? '') ? '' : 'w-full',
         className,
       )}
     />

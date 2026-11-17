@@ -11,7 +11,7 @@ import {
   weekDays,
   weekStartOf,
 } from './dates'
-import { formatHM, parseDuration } from './duration'
+import { formatHM, formatHours, parseDuration } from './duration'
 
 describe('dates', () => {
   it('Woche beginnt Montag', () => {
@@ -59,19 +59,27 @@ describe('duration', () => {
   it('parst h:mm und Varianten', () => {
     expect(parseDuration('1:30')).toBe(90)
     expect(parseDuration('0:45')).toBe(45)
+    expect(parseDuration('1,30', 'h')).toBe(90)
+    expect(parseDuration('1.30', 'h')).toBe(90)
+    expect(parseDuration('1,5', 'h')).toBe(90)
+    expect(parseDuration(',5', 'h')).toBe(30)
+    expect(parseDuration('2', 'h')).toBe(120)
     expect(parseDuration('2h')).toBe(120)
     expect(parseDuration('1h15')).toBe(75)
     expect(parseDuration('45m')).toBe(45)
+    expect(parseDuration('45min', 'h')).toBe(45)
     expect(parseDuration('90')).toBe(90)
-    expect(parseDuration('1,5', 'h')).toBe(90)
     expect(parseDuration('')).toBe(0)
     expect(parseDuration('abc')).toBeNull()
     expect(parseDuration('1:75')).toBeNull()
+    expect(parseDuration('-1')).toBeNull()
   })
 
   it('formatiert h:mm', () => {
     expect(formatHM(90)).toBe('1:30')
     expect(formatHM(5)).toBe('0:05')
     expect(formatHM(2400)).toBe('40:00')
+    expect(formatHours(2400)).toBe('40')
+    expect(formatHours(750)).toBe('12,5')
   })
 })

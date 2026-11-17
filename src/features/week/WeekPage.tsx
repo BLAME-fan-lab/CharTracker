@@ -9,6 +9,9 @@ import { cx } from '../../lib/cx'
 import { OverviewHeader } from '../OverviewHeader'
 import { useDayPanel } from '../day/useDayPanel'
 import { HabitGrid } from './HabitGrid'
+import { ProjectCard } from './ProjectCard'
+import { useWeekGoals } from './useWeekGoals'
+import { WeeklyGoals } from './WeeklyGoals'
 import { habitsActiveInRange, habitsActiveOn, sundayOf, useHabitData, type HabitData } from './useHabitData'
 
 export function WeekPage() {
@@ -19,6 +22,7 @@ export function WeekPage() {
   const isCurrentWeek = monday === weekStartOf(today)
   const { open } = useDayPanel()
   const data = useHabitData()
+  const goals = useWeekGoals(monday)
 
   const goTo = (m: DateStr | null) => {
     const next = new URLSearchParams(params)
@@ -31,7 +35,7 @@ export function WeekPage() {
 
   return (
     <div className="space-y-4">
-      <OverviewHeader mode="week" />
+      <OverviewHeader mode="week" focus={isCurrentWeek ? today : monday} />
 
       <div className="flex items-center gap-1">
         <IconButton label="Vorherige Woche" onClick={() => goTo(addDaysStr(monday, -7))}>
@@ -66,6 +70,8 @@ export function WeekPage() {
           </Card>
         </>
       )}
+      <WeeklyGoals goals={goals} days={days} today={today} onOpenDay={open} />
+      <ProjectCard monday={monday} days={days} today={today} onOpenDay={open} />
     </div>
   )
 }

@@ -1,8 +1,8 @@
-import { CalendarRange, GraduationCap, ListTodo } from 'lucide-react'
+import { GraduationCap, ListTodo } from 'lucide-react'
 import { createHashRouter, Navigate, RouterProvider } from 'react-router'
 import { AppShell } from './components/AppShell'
 import { ComingSoon } from './components/ComingSoon'
-import { OverviewHeader } from './features/OverviewHeader'
+import { MonthPage } from './features/month/MonthPage'
 import { SettingsPage } from './features/settings/SettingsPage'
 import { WeekPage } from './features/week/WeekPage'
 
@@ -13,19 +13,7 @@ const router = createHashRouter([
     children: [
       { index: true, element: <Navigate to="/woche" replace /> },
       { path: 'woche', element: <WeekPage /> },
-      {
-        path: 'monat',
-        element: (
-          <div className="space-y-4">
-            <OverviewHeader mode="month" />
-            <ComingSoon
-              icon={<CalendarRange className="size-8" />}
-              title="Monatsansicht"
-              text="Kalender mit Heatmap, Klausuren und Abgaben – kommt in Phase 2."
-            />
-          </div>
-        ),
-      },
+      { path: 'monat', element: <MonthPage /> },
       {
         path: 'todos',
         element: (

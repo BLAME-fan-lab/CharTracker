@@ -7,6 +7,10 @@ export * from './types'
 export * from './hooks'
 export * as habitsRepo from './repo/habits'
 export * as settingsRepo from './repo/settings'
+export * as trainingRepo from './repo/training'
+export * as goalsRepo from './repo/goals'
+export * as projectsRepo from './repo/projects'
+export * as uniRepo from './repo/uni'
 
 import { db } from './db'
 
