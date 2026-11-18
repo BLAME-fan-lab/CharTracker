@@ -804,6 +804,57 @@ function Eye({ x, y, side, mode, ids, anim }: { x: number; y: number; side: -1 |
   )
 }
 
+/** Engelsflügel (linke Seite): Flügelbogen mit drei Federreihen, rechts gespiegelt */
+function AngelWing({ sY }: { sY: number }) {
+  const P0: P = [108, sY + 8]
+  const P1: P = [94, sY - 22]
+  const P2: P = [68, sY - 46]
+  const P3: P = [40, sY - 28]
+  const bez = (t: number): P => {
+    const u = 1 - t
+    const k0 = u * u * u
+    const k1 = 3 * u * u * t
+    const k2 = 3 * u * t * t
+    const k3 = t * t * t
+    return [k0 * P0[0] + k1 * P1[0] + k2 * P2[0] + k3 * P3[0], k0 * P0[1] + k1 * P1[1] + k2 * P2[1] + k3 * P3[1]]
+  }
+  const rows = [
+    { n: 11, len: (t: number) => 24 + 30 * t, w: 3.6, drop: 0 },
+    { n: 9, len: (t: number) => 13 + 14 * t, w: 3.2, drop: 1 },
+    { n: 8, len: (t: number) => 6 + 5 * t, w: 2.8, drop: 0 },
+  ]
+  return (
+    <g>
+      {rows.map((r, ri) =>
+        Array.from({ length: r.n }, (_, k) => {
+          const t = 0.12 + (k / (r.n - 1)) * 0.88
+          const [bx, by] = bez(t)
+          const th = ((95 + 30 * t) * Math.PI) / 180
+          const dx = Math.cos(th)
+          const dy = Math.sin(th)
+          const len = r.len(t)
+          const px = bx + dx * r.drop
+          const py = by + dy * r.drop
+          const mx = px + dx * len * 0.5
+          const my = py + dy * len * 0.5
+          const nx = -dy * r.w * 2
+          const ny = dx * r.w * 2
+          return (
+            <g key={`${ri}-${k}`}>
+              <path
+                d={`M${f1(px)} ${f1(py)} Q${f1(mx + nx)} ${f1(my + ny)} ${f1(px + dx * len)} ${f1(py + dy * len)} Q${f1(mx - nx)} ${f1(my - ny)} ${f1(px)} ${f1(py)} Z`}
+                strokeWidth={0.9}
+              />
+              <path d={`M${f1(px)} ${f1(py)} L${f1(px + dx * len * 0.85)} ${f1(py + dy * len * 0.85)}`} strokeWidth={0.5} strokeOpacity={0.7} />
+            </g>
+          )
+        }).reverse(),
+      )}
+      <path d={`M${P0[0]} ${P0[1]} C${P1[0]} ${P1[1]} ${P2[0]} ${P2[1]} ${P3[0]} ${P3[1]}`} fill="none" strokeWidth={1.7} />
+    </g>
+  )
+}
+
 function Figure({ c, path, ids, anim }: { c: AvatarCounts; path: AvatarPath; ids: Ids; anim: Anim }) {
   const hatch = `url(#${ids.tone})`
   const mail = `url(#${ids.mail})`
@@ -902,16 +953,8 @@ function Figure({ c, path, ids, anim }: { c: AvatarCounts; path: AvatarPath; ids
           <g filter={glow}>
             {[undefined, MIRROR].map((tr, i) => (
               <g key={i} transform={tr}>
-                <g className={anim('av-shimmer')} style={{ transformOrigin: `108px ${sY + 10}px` }}>
-                {[-62, -44, -26, -8, 10].map((deg, k) => {
-                  const len = 58 - Math.abs(k - 1.5) * 6
-                  return (
-                    <g key={k} transform={`rotate(${deg} 108 ${sY + 10})`}>
-                      <path d={`M108 ${sY + 10} Q${108 - len * 0.5} ${sY + 1} ${108 - len} ${sY + 10} Q${108 - len * 0.5} ${sY + 19} 108 ${sY + 10} Z`} fill={W} fillOpacity={0.08} strokeOpacity={0.85} />
-                      <path d={`M108 ${sY + 10} L${108 - len + 4} ${sY + 10}`} strokeWidth={0.6} strokeOpacity={0.7} />
-                    </g>
-                  )
-                })}
+                <g className={anim('av-flap')} style={{ transformOrigin: `108px ${sY + 8}px` }}>
+                  <AngelWing sY={sY} />
                 </g>
               </g>
             ))}

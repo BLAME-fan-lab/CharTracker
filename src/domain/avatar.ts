@@ -139,7 +139,7 @@ export const AVATAR_UNLOCKS: AvatarUnlock[] = [
   L(82, 'fusion', 'Leuchtende Male', 'Dämonenmale'),
   L(83, 'magic', 'Dritter Magiekreis'),
   L(84, 'leaves', 'Blättersturm'),
-  L(85, 'fusion', 'Flügel aus Licht', 'Schattenschwingen'),
+  L(85, 'fusion', 'Engelsflügel', 'Schattenschwingen'),
   L(86, 'posture', 'Schwert erhoben'),
   L(87, 'tree', 'Achter Baum'),
   L(88, 'fusion', 'Geweih aus Licht', 'Hörner'),

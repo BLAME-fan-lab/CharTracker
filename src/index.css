@@ -335,21 +335,6 @@ input[type='date']::-webkit-calendar-picker-indicator {
     transform: rotate(-11deg);
   }
 }
-.av-shimmer {
-  transform-box: view-box;
-  animation: av-shimmer 3.2s ease-in-out infinite;
-}
-@keyframes av-shimmer {
-  0%,
-  100% {
-    transform: rotate(0deg);
-    opacity: 1;
-  }
-  50% {
-    transform: rotate(-6deg);
-    opacity: 0.6;
-  }
-}
 .av-tree {
   transform-box: view-box;
   animation: av-tree 6s ease-in-out infinite;
