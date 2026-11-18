@@ -16,7 +16,7 @@ import { NextRankText, RankBadge, SkillRadar } from './visuals'
 export function CharacterPage() {
   const today = useToday()
   const sheet = useCharacter(today)
-  const [preview, setPreview] = useState<number | null>(null)
+  const [preview, setPreview] = useState(false)
 
   if (!sheet) {
     return (
@@ -70,8 +70,8 @@ export function CharacterPage() {
 
       <AvatarInventory
         level={sheet.level}
-        onPreview={(l) => {
-          setPreview(l)
+        onPreview={() => {
+          setPreview(true)
           window.scrollTo({ top: 0, behavior: 'smooth' })
         }}
       />

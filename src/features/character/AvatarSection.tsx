@@ -8,19 +8,17 @@ import { useAvatarPath } from './useAvatarPath'
 
 const pad = (n: number) => String(n).padStart(3, '0')
 
-/** Bühne mit dem Avatar (schwarz-weiß) und optionalem Vorschau-Regler */
-export function AvatarStage({
-  level,
-  preview,
-  onPreview,
-}: {
-  level: number
-  preview: number | null
-  onPreview: (level: number | null) => void
-}) {
-  const shown = preview ?? level
-  const state = avatarState(shown)
+/**
+ * Bühne mit dem Avatar (schwarz-weiß).
+ * Die Vorschau zeigt ausschließlich die nächste Stufe – alles danach bleibt gesperrt.
+ */
+export function AvatarStage({ level, preview, onPreview }: { level: number; preview: boolean; onPreview: (on: boolean) => void }) {
   const path = useAvatarPath()
+  const current = avatarState(level)
+  const next = current.next
+  const showing = preview && next != null
+  const shownLevel = showing ? next.step * 10 : level
+  const state = showing ? avatarState(shownLevel) : current
 
   return (
     <div className="bg-black">
@@ -28,37 +26,28 @@ export function AvatarStage({
         <Avatar c={state.counts} path={path} className="mx-auto block h-auto w-full max-w-[19rem]" />
         <div className="pointer-events-none absolute inset-x-3 top-2.5 flex items-start justify-between font-mono text-[10px] tracking-[0.2em] text-zinc-300 uppercase">
           <span>
-            {preview != null ? 'Vorschau' : 'Held'} · Lvl {pad(Math.floor(shown))}
+            {showing ? 'Vorschau' : 'Held'} · Lvl {pad(Math.floor(shownLevel))}
           </span>
           <span>Stufe {state.step}/99</span>
         </div>
-        <button
-          type="button"
-          onClick={() => onPreview(preview == null ? Math.floor(level / 10) * 10 : null)}
-          className="absolute right-2 bottom-2 inline-flex items-center gap-1 rounded-md border border-zinc-700 bg-black/80 px-2 py-1 font-mono text-[10px] tracking-widest text-zinc-300 uppercase hover:border-zinc-400 hover:text-white"
-          aria-pressed={preview != null}
-        >
-          {preview != null ? <RotateCcw className="size-3" /> : <Eye className="size-3" />}
-          {preview != null ? 'Jetzt' : 'Vorschau'}
-        </button>
+        {next && (
+          <button
+            type="button"
+            onClick={() => onPreview(!showing)}
+            className="absolute right-2 bottom-2 inline-flex items-center gap-1 rounded-md border border-zinc-700 bg-black/80 px-2 py-1 font-mono text-[10px] tracking-widest text-zinc-300 uppercase hover:border-zinc-400 hover:text-white"
+            aria-pressed={showing}
+          >
+            {showing ? <RotateCcw className="size-3" /> : <Eye className="size-3" />}
+            {showing ? 'Jetzt' : 'Nächste Stufe'}
+          </button>
+        )}
       </div>
-      {preview != null && (
-        <div className="border-t border-zinc-800 px-4 pt-2 pb-3">
-          <input
-            type="range"
-            min={0}
-            max={990}
-            step={10}
-            value={Math.floor(preview / 10) * 10}
-            onChange={(e) => onPreview(Number(e.target.value))}
-            className="w-full accent-white"
-            aria-label="Vorschau-Level"
-          />
-          <div className="mt-0.5 flex justify-between font-mono text-[10px] text-zinc-500">
-            <span>0</span>
-            <span>500</span>
-            <span>990</span>
-          </div>
+      {showing && (
+        <div className="border-t border-zinc-800 px-4 py-2.5 font-mono text-[11px] text-zinc-400">
+          <span className="text-zinc-200">Level {next.step * 10}:</span> {unlockLabel(next, path)}
+          <span className="mt-0.5 flex items-center gap-1 text-[10px] text-zinc-500">
+            <Lock className="size-3" /> Alles danach bleibt gesperrt.
+          </span>
         </div>
       )}
     </div>
@@ -66,7 +55,7 @@ export function AvatarStage({
 }
 
 /** Inventar: freigeschaltete Ausrüstung, nächste Verwandlung, Rest gesperrt */
-export function AvatarInventory({ level, onPreview }: { level: number; onPreview: (level: number) => void }) {
+export function AvatarInventory({ level, onPreview }: { level: number; onPreview: () => void }) {
   const [all, setAll] = useState(false)
   const path = useAvatarPath()
   const state = avatarState(level)
@@ -102,21 +91,27 @@ export function AvatarInventory({ level, onPreview }: { level: number; onPreview
         {items.map((u) => {
           const got = u.step <= state.step
           const isNext = u.step === state.step + 1
+          const content = (
+            <>
+              <span className="w-9 shrink-0 tabular-nums text-zinc-500">{pad(u.step * 10)}</span>
+              {got ? <span className="size-1.5 shrink-0 bg-zinc-100" /> : isNext ? <Eye className="size-3 shrink-0" /> : <Lock className="size-3 shrink-0" />}
+              <span className="min-w-0 truncate">{got || isNext ? unlockLabel(u, path) : '???'}</span>
+            </>
+          )
           return (
             <li key={u.step}>
-              <button
-                type="button"
-                onClick={() => onPreview(u.step * 10)}
-                className={cx(
-                  'flex w-full items-center gap-2 py-0.5 text-left hover:text-white',
-                  got ? 'text-zinc-100' : isNext ? 'text-zinc-400' : 'text-zinc-600',
-                )}
-                title="In der Vorschau ansehen"
-              >
-                <span className="w-9 shrink-0 tabular-nums text-zinc-500">{pad(u.step * 10)}</span>
-                {got ? <span className="size-1.5 shrink-0 bg-zinc-100" /> : <Lock className="size-3 shrink-0" />}
-                <span className="min-w-0 truncate">{got || isNext ? unlockLabel(u, path) : '???'}</span>
-              </button>
+              {isNext ? (
+                <button
+                  type="button"
+                  onClick={onPreview}
+                  className="flex w-full items-center gap-2 py-0.5 text-left text-zinc-300 underline decoration-zinc-700 underline-offset-2 hover:text-white"
+                  title="Nächste Stufe in der Vorschau ansehen"
+                >
+                  {content}
+                </button>
+              ) : (
+                <div className={cx('flex w-full items-center gap-2 py-0.5', got ? 'text-zinc-100' : 'text-zinc-600')}>{content}</div>
+              )}
             </li>
           )
         })}
@@ -138,8 +133,8 @@ export function AvatarInventory({ level, onPreview }: { level: number; onPreview
         </div>
       </div>
       <p className="mt-3 text-[10px] leading-relaxed text-zinc-500">
-        Alle 10 Charakterlevel wird dein Held ein Stück stärker: neue Ausrüstung, Magie, Begleiter und am Ende die Verschmelzung. Antippen zeigt
-        die Stufe in der Vorschau.
+        Alle 10 Charakterlevel wird dein Held ein Stück stärker: neue Ausrüstung, Magie, Begleiter und am Ende die Verschmelzung. Nur die
+        nächste Stufe lässt sich vorab ansehen, alles danach bleibt gesperrt.
       </p>
     </section>
   )

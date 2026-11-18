@@ -89,7 +89,7 @@ Probeklausur) oder Präfix (`Sonstiges:`).
    Alle 10 Charakterlevel ein neues Teil (99 Stufen bis Level 990, `domain/avatar.ts`): Schwert, Rüstung,
    schwebendes Grimoire, Magiekreise, Waldgeister, Dämonen, Burg und Wald. Ab Level 800 Verschmelzung mit
    einem Waldgeist oder Dämon (Pfad unter der Ausrüstungsliste wählbar), Level 990: Magierkönig.
-   Vorschau-Regler, Ausrüstungsliste und eigene Feier beim Überschreiten einer 10er-Grenze.
+   Vorschau nur auf die nächste Stufe (alles danach gesperrt), Ausrüstungsliste und eigene Feier beim Überschreiten einer 10er-Grenze.
    Animationen (schwebendes Grimoire, Atmen, Wind, Nebel, Funken, Flügelschlag) entfallen bei „Bewegung reduzieren“.
 
 Später: Strong-CSV-Import (Workouts, Gewichtsverlauf, PRs), Sync über Supabase.
