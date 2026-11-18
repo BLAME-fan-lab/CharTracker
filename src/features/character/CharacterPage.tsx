@@ -1,4 +1,4 @@
-import { BookOpen, ChevronRight, DoorOpen, Lock, Swords, Ticket, Trophy } from 'lucide-react'
+import { Backpack, BookOpen, ChevronRight, DoorOpen, Lock, Swords, Ticket, Trophy } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { Card, Spinner } from '../../components/ui'
@@ -10,6 +10,7 @@ import { cx } from '../../lib/cx'
 import { useParamSheet } from '../../lib/useParamSheet'
 import { useToday } from '../../lib/useToday'
 import { AvatarInventory, AvatarStage } from './AvatarSection'
+import { Bag } from './combat/Bag'
 import { CombatBook } from './combat/CombatBook'
 import { useCombat } from './combat/useCombat'
 import { SKILL_COLOR, SKILL_ICON } from './skillMeta'
@@ -41,8 +42,8 @@ export function CharacterPage() {
       <h1 className="text-xl font-bold">Charakter</h1>
 
       <section className="overflow-hidden rounded-2xl border border-zinc-800/80">
-        <AvatarStage level={sheet.level} preview={preview} onPreview={setPreview} onBook={(k) => book.open(k)} />
-        <nav className="grid grid-cols-3 border-t border-zinc-800 bg-black font-mono text-[11px] tracking-wider uppercase" aria-label="Kampf">
+        <AvatarStage level={sheet.level} preview={preview} onPreview={setPreview} onBook={(k) => book.open(k)} boosts={combat?.colors} />
+        <nav className="grid grid-cols-4 border-t border-zinc-800 bg-black font-mono text-[11px] tracking-wider uppercase" aria-label="Kampf">
           <button type="button" onClick={() => book.open('zauber')} className="flex items-center justify-center gap-1.5 py-2.5 text-zinc-300 hover:bg-zinc-900 hover:text-white">
             <BookOpen className="size-3.5" /> Zauber
           </button>
@@ -51,7 +52,14 @@ export function CharacterPage() {
             onClick={() => book.open('technik')}
             className="flex items-center justify-center gap-1.5 border-x border-zinc-800 py-2.5 text-zinc-300 hover:bg-zinc-900 hover:text-white"
           >
-            <Swords className="size-3.5" /> Techniken
+            <Swords className="size-3.5" /> Technik
+          </button>
+          <button
+            type="button"
+            onClick={() => book.open('beutel')}
+            className="flex items-center justify-center gap-1.5 border-r border-zinc-800 py-2.5 text-zinc-300 hover:bg-zinc-900 hover:text-white"
+          >
+            <Backpack className="size-3.5" /> Beutel
           </button>
           <Link to="/charakter/turm" className="flex items-center justify-center gap-1.5 py-2.5 text-zinc-300 hover:bg-zinc-900 hover:text-white">
             <DoorOpen className="size-3.5" /> Turm
@@ -118,6 +126,7 @@ export function CharacterPage() {
       </div>
 
       {bookKind && combat && <CombatBook kind={bookKind} data={combat} onClose={book.close} />}
+      {book.value === 'beutel' && combat && <Bag data={combat} onClose={book.close} />}
 
       <p className="px-1 text-xs leading-relaxed text-zinc-500">
         Jeder Baum misst dein Können auf einer realistischen Skala von 0 bis 1000. 1000 ist praktisch nicht erreichbar.

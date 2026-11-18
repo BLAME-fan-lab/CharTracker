@@ -17,12 +17,15 @@ export function AvatarStage({
   preview,
   onPreview,
   onBook,
+  boosts,
 }: {
   level: number
+  /** Leuchtfarben ausgerüsteter Talismane */
+  boosts?: string[]
   preview: boolean
   onPreview: (on: boolean) => void
   /** Grimoire bzw. Schwert angetippt */
-  onBook?: (kind: 'zauber' | 'technik') => void
+  onBook?: (kind: 'zauber' | 'technik' | 'beutel') => void
 }) {
   const path = useAvatarPath()
   const current = avatarState(level)
@@ -35,7 +38,7 @@ export function AvatarStage({
     <div className="bg-black">
       <div className="relative">
         <div className="relative mx-auto w-full max-w-[19rem]">
-          <Avatar c={state.counts} path={path} className="block h-auto w-full" />
+          <Avatar c={state.counts} path={path} boosts={boosts} className="block h-auto w-full" />
           {onBook && !showing && (
             <>
               {state.counts.grimoire >= 1 && (

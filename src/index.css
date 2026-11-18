@@ -520,6 +520,10 @@ input[type='date']::-webkit-calendar-picker-indicator {
     opacity: 0.6;
   }
 }
+.av-orbit-slow {
+  transform-box: view-box;
+  animation: av-spin 9s linear infinite;
+}
 .av-spin-mid {
   transform-box: view-box;
   animation: av-spin 14s linear infinite;

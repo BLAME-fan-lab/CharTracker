@@ -209,6 +209,14 @@ export interface CombatProgress {
   spent: number
   wins: number
   losses: number
+  /** Beutel: Talismane, Tränke, Seelensplitter (Struktur siehe domain/loot) */
+  loot?: {
+    talismans: { id: string; name: string; stat: string; rarity: string; value: number; level: number; relic?: number }[]
+    equipped: string[]
+    heal: number
+    mana: number
+    shards: number
+  }
 }
 
 /* ---------- Charakter ---------- */

@@ -75,15 +75,20 @@ const MIRROR = 'translate(240 0) scale(-1 1)'
 export function Avatar({
   c,
   path = 'demon',
+  boosts = [],
   className,
   animate = true,
 }: {
   c: AvatarCounts
   path?: AvatarPath
+  /** Leuchtfarben ausgerüsteter Talismane – die einzige Farbe im Bild */
+  boosts?: string[]
   className?: string
   animate?: boolean
 }) {
   const uid = useId().replace(/:/g, '')
+  const boostId = `boost-${uid}`
+  const auraId = `aura-${uid}`
   const ids: Ids = { glow: `glow-${uid}`, tone: `tone-${uid}`, mail: `mail-${uid}`, clip: `clip-${uid}` }
   const a: Anim = (cls) => (animate ? cls : undefined)
   const hatch = `url(#${ids.tone})`
@@ -101,6 +106,20 @@ export function Avatar({
         <pattern id={ids.tone} width={3} height={3} patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
           <line x1={0.5} y1={0} x2={0.5} y2={3} stroke={W} strokeWidth={0.55} strokeOpacity={0.6} />
         </pattern>
+        {boosts.length > 0 && (
+          <>
+            <filter id={boostId} x="-30%" y="-30%" width="160%" height="160%">
+              {boosts.map((col, i) => (
+                <feDropShadow key={i} dx={0} dy={0} stdDeviation={1.6 + i * 0.8} floodColor={col} floodOpacity={0.95} />
+              ))}
+            </filter>
+            <radialGradient id={auraId}>
+              <stop offset="0%" stopColor={boosts[0]} stopOpacity={0.35} />
+              <stop offset="60%" stopColor={boosts[boosts.length - 1]} stopOpacity={0.12} />
+              <stop offset="100%" stopColor={boosts[boosts.length - 1]} stopOpacity={0} />
+            </radialGradient>
+          </>
+        )}
         <pattern id={ids.mail} width={2.6} height={2.2} patternUnits="userSpaceOnUse">
           <path d="M0 1.1 A1.3 1 0 0 1 2.6 1.1" fill="none" stroke={W} strokeWidth={0.45} strokeOpacity={0.8} />
         </pattern>
@@ -149,9 +168,29 @@ export function Avatar({
           </g>
         )}
 
-        <g filter={c.magic >= 5 || c.apex >= 1 ? `url(#${ids.glow})` : undefined}>
-          <Figure c={c} path={path} ids={ids} anim={a} />
+        {/* Farbiger Schimmer der Talismane */}
+        {boosts.length > 0 && <ellipse cx={120} cy={168} rx={62} ry={96} fill={`url(#${auraId})`} stroke="none" className={a('av-pulse')} />}
+        <g filter={boosts.length > 0 ? `url(#${boostId})` : undefined}>
+          <g filter={c.magic >= 5 || c.apex >= 1 ? `url(#${ids.glow})` : undefined}>
+            <Figure c={c} path={path} ids={ids} anim={a} />
+          </g>
         </g>
+        {/* Leuchtsteine der Talismane kreisen um den Helden */}
+        {boosts.length > 0 && (
+          <g className={a('av-orbit-slow')} style={{ transformOrigin: '120px 165px' }}>
+            {boosts.map((col, i) => {
+              const ang = (i / boosts.length) * Math.PI * 2 - Math.PI / 6
+              const x = 120 + Math.cos(ang) * 58
+              const y = 165 + Math.sin(ang) * 58
+              return (
+                <g key={`bs${i}`}>
+                  <path d={star4(x, y, 3.6)} fill={col} stroke={col} strokeWidth={0.6} filter={`url(#${ids.glow})`} />
+                  <circle cx={f1(x)} cy={f1(y)} r={1.1} fill={W} stroke="none" />
+                </g>
+              )
+            })}
+          </g>
+        )}
 
         <Grimoire n={c.grimoire} ids={ids} anim={a} />
         <Companions c={c} ids={ids} anim={a} />

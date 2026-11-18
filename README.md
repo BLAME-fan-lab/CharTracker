@@ -95,5 +95,8 @@ Probeklausur) oder Präfix (`Sonstiges:`).
    Kampfwerte aus den Skill-Bäumen und der Ausrüstung, Zauber (Grimoire antippen) und Kampftechniken (Schwert antippen)
    werden über Skill-Level freigeschaltet. Kämpfe laufen automatisch und deterministisch ab („Kampf!“ drücken),
    Kampftickets kommen aus perfekten Tagen und Trainings (3 zum Start). Fortschritt in `settings.combat`.
+10. ✅ Beute (7b): jeder Sieg gibt Seelensplitter, manchmal Tränke oder Talismane (4 Seltenheiten), Bosse ein eigenes
+    Relikt (`domain/loot.ts`). 3 Talisman-Plätze mit gedeckelten Boni (+15 % Werte, +5 Krit-Punkte, +25 % Element),
+    Schmiede (Splitter → Stufe 1–5), Zerlegen. Ausgerüstete Talismane leuchten farbig am Avatar.
 
 Später: Strong-CSV-Import (Workouts, Gewichtsverlauf, PRs), Sync über Supabase.

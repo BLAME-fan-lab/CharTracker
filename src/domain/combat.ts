@@ -260,13 +260,16 @@ export interface BattleEvent {
 export interface BattleResult {
   win: boolean
   rounds: number
+  /** verbrauchte Tränke aus dem Beutel (nicht die freien aus dem Projekt-Baum) */
+  usedHeal: number
+  usedMana: number
   events: BattleEvent[]
   heroMax: number
   enemyMax: number
 }
 
 /** kleiner, schneller Zufallsgenerator mit Seed */
-function mulberry32(seed: number) {
+export function mulberry32(seed: number) {
   let a = seed >>> 0
   return () => {
     a = (a + 0x6d2b79f5) >>> 0
@@ -277,17 +280,63 @@ function mulberry32(seed: number) {
   }
 }
 
+/** Boni aus ausgerüsteten Talismanen (Prozent, Krit in Prozentpunkten) */
+export interface Bonus {
+  atk: number
+  mag: number
+  hp: number
+  def: number
+  spd: number
+  mana: number
+  crit: number
+  elem: Partial<Record<Element, number>>
+}
+export const NO_BONUS: Bonus = { atk: 0, mag: 0, hp: 0, def: 0, spd: 0, mana: 0, crit: 0, elem: {} }
+
+export function applyBonus(st: HeroStats, b: Bonus): HeroStats {
+  const up = (v: number, pct: number) => Math.round(v * (1 + pct / 100))
+  return {
+    ...st,
+    hp: up(st.hp, b.hp),
+    atk: up(st.atk, b.atk),
+    mag: up(st.mag, b.mag),
+    def: up(st.def, b.def),
+    spd: up(st.spd, b.spd),
+    mana: up(st.mana, b.mana),
+    crit: Math.min(0.35, st.crit + b.crit / 100),
+  }
+}
+
 export interface HeroLoadout {
   stats: HeroStats
+  bonus: Bonus
+  /** Tränke aus dem Beutel */
+  extraHeal: number
+  extraMana: number
   /** alle freigeschalteten Zauber – vor dem Kampf werden `stats.slots` davon passend zum Gegner ausgerüstet */
   spells: Spell[]
   techniques: Technique[]
   path: AvatarPath
 }
 
-export function loadout(skills: SkillLevels, level: number, counts: AvatarCounts, path: AvatarPath): HeroLoadout {
-  const stats = heroStats(skills, counts)
-  return { stats, spells: unlockedSpells(skills, level), techniques: unlockedTechniques(skills, level), path }
+export function loadout(
+  skills: SkillLevels,
+  level: number,
+  counts: AvatarCounts,
+  path: AvatarPath,
+  extras: { bonus?: Bonus; heal?: number; mana?: number } = {},
+): HeroLoadout {
+  const bonus = extras.bonus ?? NO_BONUS
+  const stats = applyBonus(heroStats(skills, counts), bonus)
+  return {
+    stats,
+    bonus,
+    extraHeal: extras.heal ?? 0,
+    extraMana: extras.mana ?? 0,
+    spells: unlockedSpells(skills, level),
+    techniques: unlockedTechniques(skills, level),
+    path,
+  }
 }
 
 const MAX_ROUNDS = 40
@@ -301,7 +350,9 @@ export function simulateBattle(hero: HeroLoadout, enemy: Enemy, seed: number): B
   let hp = st.hp
   let mana = st.mana
   let stamina = st.stamina
-  let potions = st.potions
+  let potions = st.potions + hero.extraHeal
+  let potionsUsed = 0
+  let manaPotions = hero.extraMana
   let ehp = enemy.hp
   let shield = 0
   let regen = 0
@@ -320,7 +371,7 @@ export function simulateBattle(hero: HeroLoadout, enemy: Enemy, seed: number): B
 
   const strike = (base: number, el: Element, pierce: boolean): { dmg: number; crit: boolean } => {
     const crit = rnd() < st.crit
-    let d = base * vary() * elemMod(el) * (crit ? 1.75 : 1)
+    let d = base * vary() * elemMod(el) * (crit ? 1.75 : 1) * (1 + (hero.bonus.elem[el] ?? 0) / 100)
     if (!pierce) d -= enemy.def
     return { dmg: Math.max(1, Math.round(d)), crit }
   }
@@ -336,6 +387,7 @@ export function simulateBattle(hero: HeroLoadout, enemy: Enemy, seed: number): B
       const heal = spells.find((s) => s.kind === 'heal' && s.cost <= mana)
       if (potions > 0 && (!heal || rnd() < 0.5)) {
         potions--
+        potionsUsed++
         const amount = Math.round(st.hp * 0.3)
         hp = Math.min(st.hp, hp + amount)
         log('hero', `Du trinkst einen Heiltrank (+${amount}).`, 'heal')
@@ -346,6 +398,17 @@ export function simulateBattle(hero: HeroLoadout, enemy: Enemy, seed: number): B
         const amount = Math.round(st.hp * heal.power)
         hp = Math.min(st.hp, hp + amount)
         log('hero', `${heal.name}: +${amount} Lebenspunkte.`, 'heal')
+        return
+      }
+    }
+    // Manatrank, wenn kein Angriffszauber mehr bezahlbar ist
+    if (manaPotions > 0 && mana < st.mana * 0.25) {
+      const attack = spells.filter((s) => s.kind === 'damage' || s.kind === 'drain')
+      if (attack.length && attack.every((s) => s.cost > mana)) {
+        manaPotions--
+        const amount = Math.round(st.mana * 0.5)
+        mana = Math.min(st.mana, mana + amount)
+        log('hero', `Du trinkst einen Manatrank (+${amount} Mana).`, 'buff')
         return
       }
     }
@@ -539,7 +602,15 @@ export function simulateBattle(hero: HeroLoadout, enemy: Enemy, seed: number): B
   if (win) log('info', `${enemy.name} ist besiegt!`, 'info')
   else if (hp <= 0) log('info', 'Du gehst zu Boden.', 'info')
   else log('info', 'Erschöpft brichst du den Kampf ab.', 'info')
-  return { win, rounds: round, events, heroMax: st.hp, enemyMax: enemy.hp }
+  return {
+    win,
+    rounds: round,
+    usedHeal: Math.max(0, potionsUsed - st.potions),
+    usedMana: hero.extraMana - manaPotions,
+    events,
+    heroMax: st.hp,
+    enemyMax: enemy.hp,
+  }
 }
 
 /* ---------- Kampftickets ---------- */

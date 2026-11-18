@@ -1,4 +1,4 @@
-import { ArrowLeft, Lock, Skull, Swords, Ticket, Trophy } from 'lucide-react'
+import { ArrowLeft, Backpack, Gem, Lock, Skull, Swords, Ticket, Trophy } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { Card, Spinner } from '../../../components/ui'
@@ -14,13 +14,17 @@ import {
   type BattleResult,
   type Enemy,
 } from '../../../domain/combat'
+import { addDrops, describeDrop, rollLoot, STAT_INFO, type Drop } from '../../../domain/loot'
 import { cx } from '../../../lib/cx'
+import { useParamSheet } from '../../../lib/useParamSheet'
 import { useToday } from '../../../lib/useToday'
 import { Avatar } from '../Avatar'
 import { useAvatarPath } from '../useAvatarPath'
 import { useCharacter } from '../useCharacter'
+import { Bag } from './Bag'
 import { StatGrid } from './CombatBook'
 import { EnemyFigure } from './EnemyFigure'
+import { TalismanIcon } from './TalismanIcon'
 import { useCombat } from './useCombat'
 
 export function TowerPage() {
@@ -28,8 +32,9 @@ export function TowerPage() {
   const sheet = useCharacter(today)
   const data = useCombat(sheet)
   const path = useAvatarPath()
-  const [battle, setBattle] = useState<{ result: BattleResult; enemy: Enemy } | null>(null)
+  const [battle, setBattle] = useState<{ result: BattleResult; enemy: Enemy; drops: Drop[]; colors: string[] } | null>(null)
   const [busy, setBusy] = useState(false)
+  const bag = useParamSheet('buch')
 
   if (!sheet || !data) {
     return (
@@ -50,16 +55,19 @@ export function TowerPage() {
     setBusy(true)
     const seed = enemy.floor * 7919 + p.wins * 131 + p.losses * 17 + 1
     const result = simulateBattle(data.hero, enemy, seed)
-    // Ergebnis sofort speichern – neu laden würfelt nicht neu
+    const drops = result.win ? rollLoot(enemy, seed, `${enemy.floor}-${p.wins + p.losses}`) : []
+    const used = { ...data.inventory, heal: data.inventory.heal - result.usedHeal, mana: data.inventory.mana - result.usedMana }
+    // Ergebnis und Beute sofort speichern – neu laden würfelt nicht neu
     await settingsRepo.updateSettings({
       combat: {
         floor: result.win ? Math.max(p.floor, enemy.floor) : p.floor,
         spent: p.spent + 1,
         wins: p.wins + (result.win ? 1 : 0),
         losses: p.losses + (result.win ? 0 : 1),
+        loot: addDrops(used, drops),
       },
     })
-    setBattle({ result, enemy })
+    setBattle({ result, enemy, drops, colors: data.colors })
     setBusy(false)
   }
 
@@ -68,6 +76,8 @@ export function TowerPage() {
       <BattleView
         result={battle.result}
         enemy={battle.enemy}
+        drops={battle.drops}
+        colors={battle.colors}
         level={sheet.level}
         path={path}
         onDone={() => setBattle(null)}
@@ -84,7 +94,15 @@ export function TowerPage() {
           <ArrowLeft className="size-5" />
         </Link>
         <h1 className="text-xl font-bold">Turm der Prüfungen</h1>
+        <button
+          type="button"
+          onClick={() => bag.open('beutel')}
+          className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-zinc-800 px-2.5 py-1.5 font-mono text-[11px] tracking-wider text-zinc-300 uppercase hover:border-zinc-600"
+        >
+          <Backpack className="size-3.5" /> Beutel
+        </button>
       </div>
+      {bag.value === 'beutel' && <Bag data={data} onClose={bag.close} />}
 
       <section className="rounded-2xl border border-zinc-800 bg-black p-3 font-mono sm:p-4">
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
@@ -123,6 +141,11 @@ export function TowerPage() {
                   Lebenspunkte {enemy.hp} · Angriff {enemy.atk}
                 </li>
                 <li className="text-zinc-500">Ausgeglichen ab Charakterlevel {enemy.level}</li>
+                {enemy.boss && (
+                  <li className="flex items-center gap-1.5 text-amber-200">
+                    <Gem className="size-3.5" /> Beute: ein legendäres Relikt
+                  </li>
+                )}
               </ul>
               <button
                 type="button"
@@ -197,12 +220,16 @@ export function TowerPage() {
 function BattleView({
   result,
   enemy,
+  drops,
+  colors,
   level,
   path,
   onDone,
 }: {
   result: BattleResult
   enemy: Enemy
+  drops: Drop[]
+  colors: string[]
   level: number
   path: AvatarPath
   onDone: () => void
@@ -238,7 +265,7 @@ function BattleView({
       </h1>
       <div className="grid grid-cols-2 gap-3">
         <div key={heroHit ? `h${i}` : 'h'} className={cx('overflow-hidden rounded-xl border border-zinc-800 bg-black', heroHit && 'animate-hit')}>
-          <Avatar c={avatarState(level).counts} path={path} className="block h-auto w-full" />
+          <Avatar c={avatarState(level).counts} path={path} boosts={colors} className="block h-auto w-full" />
           <div className="p-2 font-mono text-[11px]">
             <div className="flex justify-between text-zinc-300">
               <span>Du</span>
@@ -292,6 +319,24 @@ function BattleView({
                 : `Etage ${enemy.floor} geschafft. Etage ${enemy.floor + 1} wartet.`
               : 'Werde im echten Leben stärker und versuche es erneut.'}
           </p>
+          {drops.length > 0 && (
+            <ul className="mx-auto mt-3 max-w-xs space-y-1.5 text-left text-xs">
+              {drops.map((d, k) => (
+                <li key={k} className="animate-pop flex items-center gap-2 rounded-lg bg-black px-2 py-1.5 text-zinc-100" style={{ animationDelay: `${k * 0.15}s` }}>
+                  {d.kind === 'talisman' ? (
+                    <TalismanIcon t={d.talisman} size="sm" />
+                  ) : (
+                    <span className="grid size-6 place-items-center rounded-md border border-zinc-700 text-[10px]">
+                      {d.kind === 'heal' ? '♥' : d.kind === 'mana' ? '✦' : '◆'}
+                    </span>
+                  )}
+                  <span className="min-w-0" style={d.kind === 'talisman' ? { color: STAT_INFO[d.talisman.stat].color } : undefined}>
+                    {describeDrop(d)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
           <button
             type="button"
             onClick={onDone}
