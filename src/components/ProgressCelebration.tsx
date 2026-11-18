@@ -1,10 +1,12 @@
-import { ArrowUp, Medal, Trophy } from 'lucide-react'
+import { ArrowUp, Medal, Sparkles, Trophy } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { settingsRepo, useSettings } from '../data'
 import { ACHIEVEMENTS, evaluateAchievements } from '../domain/achievements'
+import { avatarState } from '../domain/avatar'
 import { SKILL_NAMES, type SkillKey } from '../domain/characterSheet'
 import { detectProgress, isBigEvent, sameSnapshot, snapshot, type ProgressEvent } from '../domain/progressEvents'
+import { Avatar } from '../features/character/Avatar'
 import { useCharacter } from '../features/character/useCharacter'
 import { cx } from '../lib/cx'
 import { useToday } from '../lib/useToday'
@@ -103,7 +105,16 @@ function CelebrationOverlay({ events, onClose, onShow }: { events: ProgressEvent
   const confetti = CONFETTI
   const ranks = events.filter((e) => e.kind === 'rank-up')
   const achievements = events.filter((e) => e.kind === 'achievement')
-  const title = ranks.length ? 'Aufgestiegen!' : achievements.length > 1 ? 'Neue Errungenschaften!' : 'Neue Errungenschaft!'
+  const items = events.flatMap((e) => (e.kind === 'item' ? [e.unlock] : []))
+  const onlyItems = items.length > 0 && !ranks.length && !achievements.length
+  const title = ranks.length
+    ? 'Aufgestiegen!'
+    : achievements.length > 1
+      ? 'Neue Errungenschaften!'
+      : achievements.length
+        ? 'Neue Errungenschaft!'
+        : 'Verwandlung!'
+  const topStep = Math.max(0, ...items.map((u) => u.step))
 
   return (
     <div className="fixed inset-0 z-[60] grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={title}>
@@ -112,22 +123,34 @@ function CelebrationOverlay({ events, onClose, onShow }: { events: ProgressEvent
         {confetti.map((c, i) => (
           <span
             key={i}
-            className="confetti absolute top-[-5%] block h-3 w-1.5 rounded-sm"
+            className={cx('confetti absolute top-[-5%] block', onlyItems ? 'size-1 rounded-full' : 'h-3 w-1.5 rounded-sm')}
             style={{
               left: `${c.left}%`,
-              backgroundColor: c.color,
+              backgroundColor: onlyItems ? '#f4f4f5' : c.color,
+              opacity: onlyItems ? 0.6 : undefined,
               animationDelay: `${c.delay}s`,
-              animationDuration: `${c.duration}s`,
+              animationDuration: `${c.duration * (onlyItems ? 1.8 : 1)}s`,
               transform: `rotate(${c.rotate}deg)`,
             }}
           />
         ))}
       </div>
-      <div className="animate-pop relative max-h-[85dvh] w-full max-w-sm overflow-y-auto rounded-3xl border border-amber-400/40 bg-zinc-900 p-6 text-center shadow-2xl">
-        <div className="glow mx-auto grid size-20 place-items-center rounded-full bg-amber-400/15 text-amber-300 ring-2 ring-amber-400/50">
-          {ranks.length ? <Medal className="size-10" /> : <Trophy className="size-10" />}
-        </div>
-        <h2 className="mt-4 text-2xl font-bold">{title}</h2>
+      <div
+        className={cx(
+          'animate-pop relative max-h-[85dvh] w-full max-w-sm overflow-y-auto rounded-3xl border p-6 text-center shadow-2xl',
+          onlyItems ? 'border-zinc-500/50 bg-black' : 'border-amber-400/40 bg-zinc-900',
+        )}
+      >
+        {items.length > 0 ? (
+          <div className="mx-auto w-40 overflow-hidden rounded-2xl border border-zinc-700 bg-black">
+            <Avatar c={avatarState(topStep * 10).counts} className="block h-auto w-full" />
+          </div>
+        ) : (
+          <div className="glow mx-auto grid size-20 place-items-center rounded-full bg-amber-400/15 text-amber-300 ring-2 ring-amber-400/50">
+            {ranks.length ? <Medal className="size-10" /> : <Trophy className="size-10" />}
+          </div>
+        )}
+        <h2 className={cx('mt-4 text-2xl font-bold', onlyItems && 'font-mono tracking-widest uppercase')}>{title}</h2>
         <ul className="mt-4 space-y-2 text-left">
           {ranks.map((e, i) =>
             e.kind === 'rank-up' ? (
@@ -152,6 +175,17 @@ function CelebrationOverlay({ events, onClose, onShow }: { events: ProgressEvent
               </li>
             ) : null
           })}
+          {items.map((u) => (
+            <li key={`i${u.step}`} className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2 font-mono ring-1 ring-white/20">
+              <Sparkles className="size-4 shrink-0 text-zinc-100" />
+              <div>
+                <div className="text-sm font-semibold text-zinc-100">{u.label}</div>
+                <div className="text-xs text-zinc-400">
+                  Level {u.step * 10} · Stufe {u.step}/99
+                </div>
+              </div>
+            </li>
+          ))}
         </ul>
         <div className="mt-5 flex justify-center gap-2">
           <Button variant="ghost" onClick={onClose}>

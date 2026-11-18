@@ -117,12 +117,160 @@ input[type='date']::-webkit-calendar-picker-indicator {
 .glow {
   animation: glow-pulse 1.8s ease-in-out infinite;
 }
+/* Avatar-Animationen */
+.av-ash {
+  animation: av-fall linear infinite;
+}
+@keyframes av-fall {
+  from {
+    transform: translate(0, -260px);
+  }
+  to {
+    transform: translate(-14px, 40px);
+  }
+}
+.av-bob {
+  animation: av-bob 3.2s ease-in-out infinite;
+}
+.av-bob-slow {
+  animation: av-bob 4.4s ease-in-out infinite;
+}
+@keyframes av-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+.av-sweep {
+  transform-box: view-box;
+  animation: av-sweep 9s ease-in-out infinite alternate;
+}
+.av-sweep-rev {
+  transform-box: view-box;
+  animation: av-sweep 11s ease-in-out infinite alternate-reverse;
+}
+@keyframes av-sweep {
+  from {
+    transform: rotate(-14deg);
+  }
+  to {
+    transform: rotate(14deg);
+  }
+}
+.av-blink {
+  animation: av-blink 1.6s steps(1) infinite;
+}
+@keyframes av-blink {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  71%,
+  100% {
+    opacity: 0.15;
+  }
+}
+.av-pulse {
+  animation: av-pulse 2.4s ease-in-out infinite;
+}
+@keyframes av-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+.av-twinkle {
+  animation: av-pulse 3.4s ease-in-out infinite;
+}
+.av-flicker {
+  animation: av-blink 0.4s steps(1) infinite;
+}
+.av-flutter {
+  transform-box: view-box;
+  animation: av-flutter 2.6s ease-in-out infinite;
+}
+@keyframes av-flutter {
+  0%,
+  100% {
+    transform: skewX(0deg);
+  }
+  50% {
+    transform: skewX(-4deg);
+  }
+}
+.av-glide {
+  animation: av-glide 7s ease-in-out infinite;
+}
+@keyframes av-glide {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(6px, -3px);
+  }
+}
+.av-wind {
+  animation: av-wind 2.2s linear infinite;
+}
+@keyframes av-wind {
+  from {
+    transform: translateX(-40px);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  to {
+    transform: translateX(60px);
+    opacity: 0;
+  }
+}
+.av-glitch {
+  animation: av-glitch 3.1s steps(1) infinite;
+}
+@keyframes av-glitch {
+  0%,
+  86% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  87% {
+    opacity: 1;
+    transform: translateX(-6px);
+  }
+  90% {
+    opacity: 1;
+    transform: translateX(8px);
+  }
+  93%,
+  100% {
+    opacity: 0;
+  }
+}
+.av-spin {
+  transform-box: view-box;
+  animation: av-spin 40s linear infinite;
+}
+@keyframes av-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-sheet,
   .animate-fade,
   .animate-pop,
-  .glow {
-    animation: none;
+  .glow,
+  [class*='av-'] {
+    animation: none !important;
   }
   .confetti {
     display: none;

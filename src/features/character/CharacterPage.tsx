@@ -1,4 +1,5 @@
 import { ChevronRight, Lock, Trophy } from 'lucide-react'
+import { useState } from 'react'
 import { Link } from 'react-router'
 import { Card, Spinner } from '../../components/ui'
 import { useSettings } from '../../data'
@@ -7,6 +8,7 @@ import { displayLevel, MAX_LEVEL } from '../../domain/character'
 import { SKILL_NAMES, type CharacterSheet, type SkillResult } from '../../domain/characterSheet'
 import { cx } from '../../lib/cx'
 import { useToday } from '../../lib/useToday'
+import { AvatarInventory, AvatarStage } from './AvatarSection'
 import { SKILL_COLOR, SKILL_ICON } from './skillMeta'
 import { useCharacter } from './useCharacter'
 import { NextRankText, RankBadge, SkillRadar } from './visuals'
@@ -14,6 +16,7 @@ import { NextRankText, RankBadge, SkillRadar } from './visuals'
 export function CharacterPage() {
   const today = useToday()
   const sheet = useCharacter(today)
+  const [preview, setPreview] = useState<number | null>(null)
 
   if (!sheet) {
     return (
@@ -31,36 +34,47 @@ export function CharacterPage() {
     <div className="space-y-4">
       <h1 className="text-xl font-bold">Charakter</h1>
 
-      <section className="flex items-center gap-4 rounded-2xl border border-zinc-800/80 bg-gradient-to-br from-zinc-900 to-zinc-950 p-4">
-        <div
-          className="relative grid size-28 shrink-0 place-items-center rounded-full"
-          style={{ background: `conic-gradient(#34d399 ${ringPct}%, #27272a ${ringPct}% 100%)` }}
-          role="img"
-          aria-label={`Charakterlevel ${level} von 1000`}
-        >
-          <div className="grid size-[5.9rem] place-items-center rounded-full bg-zinc-950">
-            <div className="text-center leading-none">
-              <div className="text-3xl font-bold tabular-nums">{level}</div>
-              <div className="mt-1 text-[10px] tracking-widest text-zinc-500 uppercase">von 1000</div>
+      <section className="overflow-hidden rounded-2xl border border-zinc-800/80">
+        <AvatarStage level={sheet.level} preview={preview} onPreview={setPreview} />
+        <div className="flex items-center gap-4 border-t border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950 p-4">
+          <div
+            className="relative grid size-28 shrink-0 place-items-center rounded-full"
+            style={{ background: `conic-gradient(#34d399 ${ringPct}%, #27272a ${ringPct}% 100%)` }}
+            role="img"
+            aria-label={`Charakterlevel ${level} von 1000`}
+          >
+            <div className="grid size-[5.9rem] place-items-center rounded-full bg-zinc-950">
+              <div className="text-center leading-none">
+                <div className="text-3xl font-bold tabular-nums">{level}</div>
+                <div className="mt-1 text-[10px] tracking-widest text-zinc-500 uppercase">von 1000</div>
+              </div>
+            </div>
+          </div>
+          <div className="min-w-0 space-y-1.5 text-sm">
+            <div className="text-xs tracking-wide text-zinc-400 uppercase">Charakterlevel</div>
+            <RankBadge level={sheet.level} size="md" />
+            <NextRankText level={sheet.level} className="block text-xs text-zinc-400" />
+            <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-zinc-400">
+              {sheet.age != null && <span>{sheet.age} Jahre</span>}
+              {sheet.weightKg != null && <span>{sheet.weightKg.toLocaleString('de-DE')} kg</span>}
+              {sheet.bmi != null && <span>BMI {sheet.bmi.toLocaleString('de-DE', { maximumFractionDigits: 1 })}</span>}
+              {sheet.age == null && (
+                <Link to="/charakter/health" className="text-emerald-300 underline underline-offset-2">
+                  Profil ausfüllen
+                </Link>
+              )}
             </div>
           </div>
         </div>
-        <div className="min-w-0 space-y-1.5 text-sm">
-          <div className="text-xs tracking-wide text-zinc-400 uppercase">Charakterlevel</div>
-          <RankBadge level={sheet.level} size="md" />
-          <NextRankText level={sheet.level} className="block text-xs text-zinc-400" />
-          <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-zinc-400">
-            {sheet.age != null && <span>{sheet.age} Jahre</span>}
-            {sheet.weightKg != null && <span>{sheet.weightKg.toLocaleString('de-DE')} kg</span>}
-            {sheet.bmi != null && <span>BMI {sheet.bmi.toLocaleString('de-DE', { maximumFractionDigits: 1 })}</span>}
-            {sheet.age == null && (
-              <Link to="/charakter/health" className="text-emerald-300 underline underline-offset-2">
-                Profil ausfüllen
-              </Link>
-            )}
-          </div>
-        </div>
       </section>
+
+      <AvatarInventory
+        level={sheet.level}
+        onPreview={(l) => {
+          setPreview(l)
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        }}
+      />
 
       <Card title="Skill-Netz">
         <div className="flex justify-center">

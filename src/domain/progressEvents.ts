@@ -1,3 +1,4 @@
+import { unlocksBetween, type AvatarUnlock } from './avatar'
 import { rankFor, type Rank } from './ranks'
 
 export interface LevelSnapshot {
@@ -9,6 +10,7 @@ export type ProgressEvent =
   | { kind: 'rank-up'; skill: string | null; rank: Rank; level: number }
   | { kind: 'achievement'; id: string }
   | { kind: 'level-up'; from: number; to: number }
+  | { kind: 'item'; unlock: AvatarUnlock }
 
 /** Werte auf eine Nachkommastelle, damit Rundungsrauschen keine Ereignisse auslöst */
 export const snapshot = (character: number, skills: Record<string, number>): LevelSnapshot => ({
@@ -24,6 +26,7 @@ export const sameSnapshot = (a: LevelSnapshot, b: LevelSnapshot) =>
  * Was ist seit dem letzten Schnappschuss neu?
  * - Rang-Aufstieg (Charakter oder Baum überschreitet eine 100er-Grenze)
  * - neue Errungenschaften
+ * - neue Avatar-Ausrüstung (alle 10 Charakterlevel)
  * - Charakterlevel um mindestens 1 gestiegen (kleiner Hinweis)
  * Ohne vorherigen Schnappschuss (erster Start) gibt es keine Ereignisse.
  */
@@ -46,11 +49,12 @@ export function detectProgress(
   }
   const known = new Set(knownIds)
   for (const id of unlockedIds) if (!known.has(id)) events.push({ kind: 'achievement', id })
+  for (const unlock of unlocksBetween(prev.character, next.character)) events.push({ kind: 'item', unlock })
   if (Math.floor(next.character) > Math.floor(prev.character)) {
     events.push({ kind: 'level-up', from: Math.floor(prev.character), to: Math.floor(next.character) })
   }
   return events
 }
 
-/** Große Feier (Overlay) nur bei Rang-Aufstieg oder Errungenschaft, sonst kleiner Hinweis */
+/** Große Feier (Overlay) bei Rang-Aufstieg, Errungenschaft oder neuer Ausrüstung, sonst kleiner Hinweis */
 export const isBigEvent = (e: ProgressEvent) => e.kind !== 'level-up'

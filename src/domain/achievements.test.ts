@@ -56,13 +56,19 @@ describe('Fortschritts-Ereignisse', () => {
   it('erster Start: keine Ereignisse', () => {
     expect(detectProgress(null, prev, ['a'], [])).toEqual([])
   })
-  it('Rang-Aufstieg, neue Errungenschaft, Level-Up', () => {
+  it('Rang-Aufstieg, neue Errungenschaft, neue Ausrüstung, Level-Up', () => {
     const next = snapshot(201.2, { academic: 912.3, sport: 100.4 })
     const ev = detectProgress(prev, next, ['a', 'b'], ['a'])
-    expect(ev.map((e) => e.kind)).toEqual(['rank-up', 'rank-up', 'achievement', 'level-up'])
+    expect(ev.map((e) => e.kind)).toEqual(['rank-up', 'rank-up', 'achievement', 'item', 'level-up'])
     expect(ev[0]).toMatchObject({ skill: null, rank: { name: 'Geselle' } })
     expect(ev[1]).toMatchObject({ skill: 'sport', rank: { name: 'Lehrling' } })
-    expect(ev.filter(isBigEvent)).toHaveLength(3)
+    expect(ev[3]).toMatchObject({ unlock: { step: 20, label: 'Begleit-Drohne' } })
+    expect(ev.filter(isBigEvent)).toHaveLength(4)
+  })
+  it('Ausrüstung nur beim Überschreiten einer 10er-Grenze', () => {
+    expect(detectProgress(prev, snapshot(199.9, { academic: 912.3, sport: 99.6 }), [], []).map((e) => e.kind)).toEqual(['level-up'])
+    const jump = detectProgress(snapshot(118, {}), snapshot(141, {}), [], [])
+    expect(jump.filter((e) => e.kind === 'item').map((e) => (e.kind === 'item' ? e.unlock.step : 0))).toEqual([12, 13, 14])
   })
   it('kleiner Anstieg ohne Rangwechsel: nur Level-Up; Rückgang: nichts', () => {
     expect(detectProgress(prev, snapshot(196.1, { academic: 912.3, sport: 99.6 }), [], []).map((e) => e.kind)).toEqual(['level-up'])
