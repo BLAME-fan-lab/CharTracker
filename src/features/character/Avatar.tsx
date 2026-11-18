@@ -17,6 +17,7 @@ interface Ids {
   glow: string
   tone: string
   mail: string
+  clip: string
 }
 
 /** feste Pseudo-Zufallswerte (stabil zwischen Renderings) */
@@ -83,7 +84,7 @@ export function Avatar({
   animate?: boolean
 }) {
   const uid = useId().replace(/:/g, '')
-  const ids: Ids = { glow: `glow-${uid}`, tone: `tone-${uid}`, mail: `mail-${uid}` }
+  const ids: Ids = { glow: `glow-${uid}`, tone: `tone-${uid}`, mail: `mail-${uid}`, clip: `clip-${uid}` }
   const a: Anim = (cls) => (animate ? cls : undefined)
   const hatch = `url(#${ids.tone})`
 
@@ -112,7 +113,7 @@ export function Avatar({
 
         {/* Großer Magiekreis hinter der Figur */}
         {c.magic >= 7 && (
-          <g opacity={0.35} fill="none" className={a('av-spin')} style={{ transformOrigin: '120px 150px' }}>
+          <g opacity={0.35} fill="none" className={a('av-spin-mid')} style={{ transformOrigin: '120px 150px' }}>
             <circle cx={120} cy={150} r={74} />
             <circle cx={120} cy={150} r={66} strokeDasharray="2 4" />
             <path
@@ -129,7 +130,7 @@ export function Avatar({
         )}
         {/* Strahlenkranz des Magierkönigs */}
         {c.apex >= 1 && (
-          <g filter={`url(#${ids.glow})`}>
+          <g filter={`url(#${ids.glow})`} className={a('av-spin')} style={{ transformOrigin: '120px 150px' }}>
             {Array.from({ length: 24 }, (_, i) => {
               const ang = (i / 24) * Math.PI * 2
               const r2 = i % 2 ? 104 : 116
@@ -158,10 +159,28 @@ export function Avatar({
         {/* Schwebende Runen */}
         {c.magic >= 3 &&
           RUNES.map(([x, y, d], i) => (
-            <g key={`ru${i}`} className={a('av-float')} style={{ animationDelay: `${-i * 0.7}s` }}>
+            <g key={`ru${i}`} className={a('av-rune')} style={{ animationDelay: `${-i * 0.8}s` }}>
               <path d={`M${x} ${y} ${d}`} fill="none" strokeWidth={1.1} filter={`url(#${ids.glow})`} />
             </g>
           ))}
+        {/* Bodennebel */}
+        <g fill="none" stroke={W} strokeWidth={1.4} strokeOpacity={0.16}>
+          <path d={`M-40 238 ${'q10 -3 20 0 q10 3 20 0 '.repeat(8)}`} className={a('av-mist')} />
+          <path d={`M-40 245 ${'q10 -2.5 20 0 q10 2.5 20 0 '.repeat(8)}`} className={a('av-mist-rev')} />
+        </g>
+        {/* Schwebender Staub */}
+        {Array.from({ length: 10 }, (_, i) => (
+          <circle
+            key={`mo${i}`}
+            cx={f1(10 + rnd(i, 51) * 220)}
+            cy={f1(150 + rnd(i, 52) * 95)}
+            r={f1(0.5 + rnd(i, 53) * 0.6)}
+            fill={W}
+            stroke="none"
+            className={a('av-mote')}
+            style={{ opacity: 0, animationDuration: `${8 + rnd(i, 54) * 6}s`, animationDelay: `${-rnd(i, 55) * 12}s` }}
+          />
+        ))}
         {/* Magiesturm */}
         {c.magic >= 8 && (
           <g fill="none" strokeOpacity={0.6} className={a('av-spin-fast')} style={{ transformOrigin: '120px 160px' }}>
@@ -252,14 +271,15 @@ function Sky({ c, hatch, anim }: { c: AvatarCounts; hatch: string; anim: Anim })
       ]
         .slice(0, c.raven)
         .map(([x, y], i) => (
-          <path
-            key={`rv${i}`}
-            d={`M${x - 6} ${y - 1} q3 -3 6 1 q3 -4 6 -1`}
-            fill="none"
-            strokeWidth={1.2}
-            className={anim('av-glide')}
-            style={{ animationDelay: `${i * 0.9}s` }}
-          />
+          <g key={`rv${i}`} className={anim('av-glide')} style={{ animationDelay: `${-i * 2.3}s` }}>
+            <path
+              d={`M${x - 6} ${y - 1} q3 -3 6 1 q3 -4 6 -1`}
+              fill="none"
+              strokeWidth={1.2}
+              className={anim('av-flap-fast')}
+              style={{ animationDelay: `${-i * 0.17}s` }}
+            />
+          </g>
         ))}
     </g>
   )
@@ -279,7 +299,15 @@ const TREES: TreeDef[] = [
   { x: 182, h: 50, kind: 'pine' },
 ]
 
-function Tree({ t, hatch }: { t: TreeDef; hatch: string }) {
+function Tree({ t, hatch, anim, i }: { t: TreeDef; hatch: string; anim: Anim; i: number }) {
+  return (
+    <g className={anim('av-tree')} style={{ transformOrigin: `${t.x}px ${GROUND}px`, animationDelay: `${-i * 1.3}s`, animationDuration: `${5 + (i % 3)}s` }}>
+      <TreeShape t={t} hatch={hatch} />
+    </g>
+  )
+}
+
+function TreeShape({ t, hatch }: { t: TreeDef; hatch: string }) {
   const top = GROUND - t.h
   if (t.kind === 'oak') {
     const r = t.h * 0.3
@@ -422,7 +450,7 @@ function Landscape({ c, ids, anim }: { c: AvatarCounts; ids: Ids; anim: Anim }) 
           {[170, 190, 210, 230].map((y) => (
             <path key={y} d={`M66 ${y} L78 ${y} M162 ${y} L174 ${y}`} strokeWidth={0.9} />
           ))}
-          <g fill="none" strokeOpacity={0.8} className={anim('av-spin')} style={{ transformOrigin: '120px 170px' }}>
+          <g fill="none" strokeOpacity={0.8} className={anim('av-spin-mid')} style={{ transformOrigin: '120px 170px' }}>
             <path d="M90 170 a30 30 0 0 1 30 -30 a24 24 0 0 1 24 24 a18 18 0 0 1 -18 18 a12 12 0 0 1 -12 -12" />
           </g>
           {c.demon >= 5 && (
@@ -437,7 +465,7 @@ function Landscape({ c, ids, anim }: { c: AvatarCounts; ids: Ids; anim: Anim }) 
 
       {/* Lauernder Dämon rechts im Wald */}
       {c.demon >= 2 && (
-        <g>
+        <g className={anim('av-lurk')}>
           <path d={DEMON_SHAPE} strokeWidth={1.4} />
           <path d={DEMON_SHAPE} fill={hatch} stroke="none" />
           <path d="M207 146 Q198 136 200 124 Q204 136 212 140 M231 146 Q240 136 238 124 Q234 136 226 140" />
@@ -455,7 +483,7 @@ function Landscape({ c, ids, anim }: { c: AvatarCounts; ids: Ids; anim: Anim }) 
 
       {/* Wald */}
       {TREES.slice(0, c.tree).map((t, i) => (
-        <Tree key={`tr${i}`} t={t} hatch={hatch} />
+        <Tree key={`tr${i}`} t={t} hatch={hatch} anim={anim} i={i} />
       ))}
 
       {/* Augen im Dunkel */}
@@ -494,7 +522,7 @@ function Landscape({ c, ids, anim }: { c: AvatarCounts; ids: Ids; anim: Anim }) 
         <g>
           <line x1={10} y1={GROUND} x2={10} y2={136} strokeWidth={1.6} />
           <circle cx={10} cy={134} r={1.8} fill={W} stroke="none" />
-          <g className={anim('av-flutter')} style={{ transformOrigin: '10px 140px' }}>
+          <g className={anim('av-flutter-strong')} style={{ transformOrigin: '10px 140px' }}>
             <path d="M10 140 L36 140 L36 172 L23 166 L10 172 Z" />
             <path d={star4(23, 154, 6)} fill={W} stroke="none" />
           </g>
@@ -506,14 +534,35 @@ function Landscape({ c, ids, anim }: { c: AvatarCounts; ids: Ids; anim: Anim }) 
       <line x1={0} y1={GROUND} x2={240} y2={GROUND} strokeWidth={1.5} />
       {Array.from({ length: 22 }, (_, i) => {
         const x = f1(6 + i * 11 + rnd(i, 41) * 4)
-        return <path key={`gs${i}`} d={`M${x} ${GROUND} l-1.5 -4 M${x} ${GROUND} l0.5 -5 M${x} ${GROUND} l2.5 -3.5`} fill="none" strokeWidth={0.8} />
+        return (
+          <path
+            key={`gs${i}`}
+            d={`M${x} ${GROUND} l-1.5 -4 M${x} ${GROUND} l0.5 -5 M${x} ${GROUND} l2.5 -3.5`}
+            fill="none"
+            strokeWidth={0.8}
+            className={anim('av-grass')}
+            style={{ animationDelay: `${-rnd(i, 42) * 2.6}s` }}
+          />
+        )
       })}
 
       {/* Magiekreise am Boden */}
       {c.magic >= 2 && (
         <g fill="none" filter={glow}>
           <ellipse cx={120} cy={GROUND} rx={46} ry={8} strokeDasharray="6 3" className={anim('av-dash')} />
-          <ellipse cx={120} cy={GROUND} rx={38} ry={6} strokeWidth={0.8} />
+          <ellipse cx={120} cy={GROUND} rx={38} ry={6} strokeWidth={0.8} className={anim('av-pulse')} />
+          {Array.from({ length: 8 }, (_, i) => (
+            <circle
+              key={`em${i}`}
+              cx={f1(82 + i * 10 + rnd(i, 61) * 6)}
+              cy={GROUND - 2}
+              r={0.9}
+              fill={W}
+              stroke="none"
+              className={anim('av-rise')}
+              style={{ opacity: 0, animationDelay: `${-rnd(i, 62) * 3.5}s` }}
+            />
+          ))}
         </g>
       )}
       {c.magic >= 4 && (
@@ -546,7 +595,7 @@ function Deer({ x, y, s, ids }: { x: number; y: number; s: number; ids: Ids }) {
 
 function Wisp({ x, y, ids, anim, delay }: { x: number; y: number; ids: Ids; anim: Anim; delay: number }) {
   return (
-    <g className={anim('av-float')} style={{ animationDelay: `${delay}s` }} filter={`url(#${ids.glow})`}>
+    <g className={anim('av-wander')} style={{ animationDelay: `${delay}s` }} filter={`url(#${ids.glow})`}>
       <path d={`M${x} ${y + 4} Q${x - 4} ${y} ${x} ${y - 9} Q${x + 4} ${y} ${x} ${y + 4} Z`} fill={W} fillOpacity={0.15} />
       <circle cx={x} cy={y + 0.5} r={2} fill={W} stroke="none" className={anim('av-pulse')} />
     </g>
@@ -559,7 +608,7 @@ function Companions({ c, ids, anim }: { c: AvatarCounts; ids: Ids; anim: Anim })
       {c.spirit >= 1 && <Wisp x={186} y={118} ids={ids} anim={anim} delay={0} />}
       {c.spirit >= 2 && <Wisp x={44} y={182} ids={ids} anim={anim} delay={-1.3} />}
       {c.spirit >= 3 && (
-        <g className={anim('av-float')} style={{ animationDelay: '-0.6s' }}>
+        <g className={anim('av-hover')} style={{ animationDelay: '-1.4s', transformOrigin: '196px 158px' }}>
           <Deer x={196} y={158} s={c.spirit >= 4 ? 1.3 : 1} ids={ids} />
         </g>
       )}
@@ -575,7 +624,9 @@ function Grimoire({ n, ids, anim }: { n: number; ids: Ids; anim: Anim }) {
   const y = 150
   const glow = `url(#${ids.glow})`
   return (
-    <g className={anim('av-float')}>
+    <g>
+      <ellipse cx={x} cy={y + 26} rx={13} ry={2.6} fill={W} fillOpacity={0.45} stroke="none" filter={glow} className={anim('av-hover-shadow')} />
+      <g className={anim('av-hover')} style={{ transformOrigin: `${x}px ${y}px` }}>
       <g filter={n >= 7 ? glow : undefined}>
         {n >= 7 &&
           Array.from({ length: 10 }, (_, i) => {
@@ -626,6 +677,21 @@ function Grimoire({ n, ids, anim }: { n: number; ids: Ids; anim: Anim }) {
             <rect x={x + 22} y={y - 3} width={5} height={7} transform={`rotate(${15 + i * 10} ${x + 24} ${y})`} strokeWidth={0.8} />
           </g>
         ))}
+      {n >= 4 &&
+        [0, 1, 2, 3].map((i) => (
+          <circle
+            key={`gm${i}`}
+            cx={x - 6 + i * 4}
+            cy={y - 10}
+            r={0.9}
+            fill={W}
+            stroke="none"
+            filter={glow}
+            className={anim('av-rise')}
+            style={{ opacity: 0, animationDelay: `${-i * 0.9}s` }}
+          />
+        ))}
+      </g>
     </g>
   )
 }
@@ -644,9 +710,17 @@ function Sword({ n, magic, ids, anim }: { n: number; magic: boolean; ids: Ids; a
   const glow = `url(#${ids.glow})`
   return (
     <g>
+      <clipPath id={ids.clip}>
+        <path d={blade} />
+      </clipPath>
       <g filter={n >= 6 ? glow : undefined}>
         <path d={blade} strokeWidth={1.2} />
         <path d={`M0 2 L${h} 2 L${h} ${L - 9} L0 ${L} Z`} fill={`url(#${ids.tone})`} stroke="none" opacity={n === 0 ? 1 : 0.6} />
+        <g clipPath={`url(#${ids.clip})`}>
+          <g className={anim('av-glint')} style={{ opacity: 0 }}>
+            <path d={`M${-h - 1} 0 L${h + 1} -6 L${h + 1} -2 L${-h - 1} 4 Z`} fill={W} fillOpacity={0.85} stroke="none" />
+          </g>
+        </g>
         {n >= 2 && <line x1={0} y1={5} x2={0} y2={L - 14} strokeWidth={0.7} />}
         {n >= 4 &&
           [12, 24, 36, 48, 60].map((y, i) => (
@@ -797,7 +871,7 @@ function Figure({ c, path, ids, anim }: { c: AvatarCounts; path: AvatarPath; ids
               'M96 200 Q78 150 92 104 Q96 132 104 140 Q100 110 112 76 Q114 112 120 124 Z',
               'M144 200 Q162 150 148 104 Q144 132 136 140 Q140 110 128 76 Q126 112 120 124 Z',
             ].map((d, i) => (
-              <path key={i} d={d} fill={hatch} strokeWidth={1} className={anim('av-flicker')} style={{ animationDelay: `${i * 0.3}s` }} />
+              <path key={i} d={d} fill={hatch} strokeWidth={1} className={anim('av-waver')} style={{ animationDelay: `${-i * 0.6}s`, transformOrigin: '120px 200px' }} />
             ))}
           </g>
         ) : (
@@ -815,10 +889,12 @@ function Figure({ c, path, ids, anim }: { c: AvatarCounts; path: AvatarPath; ids
           <g>
             {[undefined, MIRROR].map((tr, i) => (
               <g key={i} transform={tr}>
+                <g className={anim('av-flap')} style={{ transformOrigin: `108px ${sY + 6}px` }}>
                 <path d={wingPath} strokeWidth={1.3} />
                 <path d={wingPath} fill={hatch} stroke="none" />
                 <path d={`M62 ${sY - 34} L48 ${sY + 22} M62 ${sY - 34} L64 ${sY + 52} M62 ${sY - 34} L86 ${sY + 50}`} fill="none" strokeWidth={1.1} />
                 <path d={`M62 ${sY - 34} l-3 -6`} strokeWidth={1.6} />
+                </g>
               </g>
             ))}
           </g>
@@ -826,6 +902,7 @@ function Figure({ c, path, ids, anim }: { c: AvatarCounts; path: AvatarPath; ids
           <g filter={glow}>
             {[undefined, MIRROR].map((tr, i) => (
               <g key={i} transform={tr}>
+                <g className={anim('av-shimmer')} style={{ transformOrigin: `108px ${sY + 10}px` }}>
                 {[-62, -44, -26, -8, 10].map((deg, k) => {
                   const len = 58 - Math.abs(k - 1.5) * 6
                   return (
@@ -835,6 +912,7 @@ function Figure({ c, path, ids, anim }: { c: AvatarCounts; path: AvatarPath; ids
                     </g>
                   )
                 })}
+                </g>
               </g>
             ))}
           </g>
@@ -843,7 +921,7 @@ function Figure({ c, path, ids, anim }: { c: AvatarCounts; path: AvatarPath; ids
 
       {/* ---- Umhang ---- */}
       {c.cape >= 1 && (
-        <g className={c.cape >= 4 ? anim('av-flutter') : undefined} style={{ transformOrigin: `120px ${sY}px` }}>
+        <g className={anim(c.cape >= 4 ? 'av-flutter-strong' : 'av-flutter')} style={{ transformOrigin: `120px ${sY}px` }}>
           <path d={capePath} />
           <path d={capePath} fill={hatch} stroke="none" opacity={0.8} />
           {c.cape >= 2 && c.cape < 4 && <path d="M91 236 L149 236" strokeWidth={0.9} />}
@@ -912,280 +990,282 @@ function Figure({ c, path, ids, anim }: { c: AvatarCounts; path: AvatarPath; ids
         />
       )}
 
-      {/* ---- Oberkörper ---- */}
-      <path d="M107 175 L133 175 L135 185 L105 185 Z" />
-      <path d={`M${hx - 4} ${hy + 12} L${hx + 4} ${hy + 12} L${hx + 4.5} ${sY + 3} L${hx - 4.5} ${sY + 3} Z`} />
-      {c.armor >= 2 && (
-        <g>
-          <path d="M100 194 L140 194 L142 203 L98 203 Z" />
-          <path d="M100 194 L140 194 L142 203 L98 203 Z" fill={mail} stroke="none" />
-        </g>
-      )}
-      {c.armor >= 1 ? (
-        <g>
-          <path d={`M102 ${sY + 1} Q120 ${sY - 2} 138 ${sY + 1} L134 174 L139 196 L101 196 L106 174 Z`} strokeWidth={1.5} />
-          <path d={`M128 ${sY + 2} L137.5 ${sY + 2} L139 196 L130 196 Z`} fill={hatch} stroke="none" />
-          <path
-            d={`M114 ${sY} L120 ${sY + 7} L126 ${sY} M116 ${sY + 4} L124 ${sY + 8} M124 ${sY + 4} L116 ${sY + 8} M116 ${sY + 9} L124 ${sY + 13} M124 ${sY + 9} L116 ${sY + 13}`}
-            fill="none"
-            strokeWidth={0.8}
-          />
-          <path d="M120 184 L120 196" fill="none" strokeWidth={0.6} strokeOpacity={0.7} />
-        </g>
-      ) : (
-        <g>
-          <path d={`M102 ${sY + 1} Q120 ${sY - 2} 138 ${sY + 1} L133 176 L107 176 Z`} strokeWidth={1.5} />
-          <path d={`M128 ${sY + 2} L137.5 ${sY + 2} L132.8 175 L126 175 Z`} fill={hatch} stroke="none" />
-          <path d={`M113 ${sY} L120 ${sY + 9} L127 ${sY}`} fill="none" strokeWidth={1} />
-          <path d="M108 150 l3 4 M131 160 l-2 4" fill="none" strokeWidth={0.7} strokeOpacity={0.7} />
-        </g>
-      )}
-      {c.armor >= 2 && <path d={`M106 ${sY + 40} L134 ${sY + 40} L134 172 L106 172 Z`} fill={mail} stroke="none" />}
-      {scars >= 3 && <path d="M107 146 l4 -3 l1 5 l4 -4" fill="none" strokeWidth={0.9} />}
-      {c.armor >= 3 && (
-        <g>
-          <path d={`M104 ${sY + 5} Q120 ${sY + 1} 136 ${sY + 5} L134 164 Q120 171 106 164 Z`} strokeWidth={1.5} />
-          <path d={`M124 ${sY + 4} Q131 ${sY + 4} 136 ${sY + 5} L134 164 Q128 168 124 169 Z`} fill={hatch} stroke="none" />
-          <path d={`M120 ${sY + 3} L120 169`} strokeWidth={0.8} />
-          <path d="M106 165 Q120 174 134 165 L135 171 Q120 180 105 171 Z" />
-        </g>
-      )}
-      {c.armor >= 4 && <path d={`M110 ${sY + 12} q4 6 0 12 M130 ${sY + 12} q-4 6 0 12 M110 156 q10 7 20 0`} fill="none" strokeWidth={0.7} />}
-      {c.armor >= 5 && (
-        <g>
-          <path d={`M113 ${sY + 18} L127 ${sY + 18} L127 ${sY + 26} Q127 ${sY + 33} 120 ${sY + 37} Q113 ${sY + 33} 113 ${sY + 26} Z`} />
-          <path d={star4(120, sY + 26, 5)} fill={W} stroke="none" />
-        </g>
-      )}
-
-      {/* ---- Gürtel ---- */}
-      {c.belt >= 1 && (
-        <g>
-          <rect x={105} y={172} width={30} height={5} />
-          <rect x={117} y={171} width={6} height={7} />
-          <line x1={120} y1={172} x2={120} y2={176} strokeWidth={0.7} />
-        </g>
-      )}
-      {c.belt >= 2 && (
-        <g>
-          <rect x={124} y={177} width={8} height={9} rx={1.5} />
-          <path d="M124 180 L132 180" strokeWidth={0.7} />
-        </g>
-      )}
-      {c.belt >= 3 && (
-        <g>
-          <path d={limb([105, 179], [98, 203], 2.2, 1.4)} />
-          <path d="M102 176 L110 179" strokeWidth={1.6} />
-          <circle cx={108} cy={173} r={1.8} />
-        </g>
-      )}
-      {c.belt >= 4 &&
-        [136.5, 141].map((x, i) => (
-          <g key={`po${x}`}>
-            <rect x={x - 1} y={178 + i} width={2} height={3} />
-            <circle cx={x} cy={184.5 + i} r={2.6} />
-            <path d={`M${x - 2} ${185 + i} L${x + 2} ${185 + i}`} strokeWidth={0.6} />
+      <g className={anim('av-breathe')}>
+        {/* ---- Oberkörper ---- */}
+        <path d="M107 175 L133 175 L135 185 L105 185 Z" />
+        <path d={`M${hx - 4} ${hy + 12} L${hx + 4} ${hy + 12} L${hx + 4.5} ${sY + 3} L${hx - 4.5} ${sY + 3} Z`} />
+        {c.armor >= 2 && (
+          <g>
+            <path d="M100 194 L140 194 L142 203 L98 203 Z" />
+            <path d="M100 194 L140 194 L142 203 L98 203 Z" fill={mail} stroke="none" />
           </g>
-        ))}
-
-      {/* ---- Schwert ---- */}
-      <g transform={`translate(${f1(guard[0])} ${f1(guard[1])}) rotate(${raised ? -140 : 0})`}>
-        <Sword n={c.sword} magic={c.magic >= 6} ids={ids} anim={anim} />
-      </g>
-
-      {/* ---- Arme ---- */}
-      {arms.map(([sh, el, ha], i) => {
-        const [mx, my] = lerp(el, ha, 0.6)
-        const [ax, ay] = lerp(el, ha, 0.2)
-        return (
-          <g key={`arm${i}`}>
-            <path d={bent(sh, el, ha, 5.4, 4.2, 3.3)} />
-            {c.armor >= 2 && <path d={limb(sh, el, 5.2, 4)} fill={mail} stroke="none" />}
-            {i === 1 && <path d={bent(sh, el, ha, 2.2, 1.6, 1.2)} transform="translate(2 0)" fill={hatch} stroke="none" />}
-            {c.arms >= 1 && (
-              <g>
-                <path d={limb(lerp(el, ha, 0.3), lerp(el, ha, 0.92), 4.6, 3.9)} />
-                <path d={across(el, ha, 0.6, 4.2)} strokeWidth={0.7} />
-              </g>
-            )}
-            {c.arms >= 3 && <path d={star4(mx, my, 2.2)} fill={W} stroke="none" />}
-            {hand(el, ha)}
-            {i === 0 && scars >= 2 && c.arms < 1 && <path d={`${across(el, ha, 0.4, 4.4)} ${across(el, ha, 0.52, 4.2)}`} strokeWidth={1} />}
-            {f >= 2 && (
-              <path
-                d={demon ? `M${f1(ax)} ${f1(ay)} l2 4 l-3 3 l2 4` : `M${f1(ax)} ${f1(ay)} q3 6 0 12`}
-                fill="none"
-                strokeWidth={1.1}
-                filter={demon ? undefined : glow}
-              />
-            )}
-          </g>
-        )
-      })}
-      {/* Funken in der linken Hand */}
-      {c.magic >= 1 && (
-        <g filter={glow} className={anim('av-pulse')}>
-          {[
-            [-6, 6, 3.2],
-            [5, 9, 2.4],
-            [-2, 12, 2],
-            [7, 2, 1.6],
-          ].map(([dx, dy, r], i) => (
-            <path key={i} d={star4(haL[0] + dx, haL[1] + dy, r)} fill={W} stroke="none" />
-          ))}
-        </g>
-      )}
-      {/* Dämonenklauen */}
-      {f >= 6 && demon && (
-        <path d={`M${haL[0] - 3} ${haL[1] + 7} q-2 4 -5 5 M${haL[0]} ${haL[1] + 8} q-1 5 -3 7 M${haL[0] + 3} ${haL[1] + 7} q0 5 -1 7`} fill="none" strokeWidth={1.4} />
-      )}
-
-      {/* ---- Schultern ---- */}
-      {c.shoulders >= 1 &&
-        (c.shoulders >= 3 ? [undefined, MIRROR] : [undefined]).map((tr, i) => (
-          <g key={`sh${i}`} transform={tr}>
-            <path d={`M95 ${sY + 14} Q93 ${sY - 3} 109 ${sY - 2} L110 ${sY + 5} Q101 ${sY + 4} 99 ${sY + 15} Z`} strokeWidth={1.4} />
-            {c.shoulders >= 2 && (
-              <g>
-                <path d={`M93 ${sY + 19} Q92 ${sY + 8} 98 ${sY + 9} L99 ${sY + 15} Z`} />
-                <circle cx={104} cy={sY + 1} r={0.9} fill={W} stroke="none" />
-              </g>
-            )}
-            {c.shoulders >= 4 && <path d={`M96 ${sY + 2} L86 ${sY - 12} L102 ${sY - 3} Z M101 ${sY - 2} L96 ${sY - 14} L106 ${sY - 3} Z`} />}
-          </g>
-        ))}
-      {c.cape >= 3 &&
-        Array.from({ length: 13 }, (_, i) => {
-          const t = Math.PI + 0.25 + (i / 12) * (Math.PI - 0.5)
-          return <circle key={`fur${i}`} cx={f1(120 + Math.cos(t) * 21)} cy={f1(sY + 6 + Math.sin(t) * 7)} r={2.6} strokeWidth={1} />
-        })}
-      {c.cape === 2 && <path d={star4(hx - 9, sY + 4, 3)} fill={W} stroke="none" />}
-
-      {/* ---- Kopf ---- */}
-      <g transform={hunched ? `rotate(9 ${hx} ${hy + 16})` : undefined}>
-        {hood && (
-          <path d={`M${hx - 19} ${hy + 16} Q${hx - 26} ${hy - 28} ${hx} ${hy - 29} Q${hx + 26} ${hy - 28} ${hx + 19} ${hy + 16} L${hx + 23} ${sY + 5} L${hx - 23} ${sY + 5} Z`} />
         )}
-        {/* Hörner oder Geweih */}
-        {f >= 4 &&
-          (demon ? (
-            <g>
-              {[undefined, MIRROR].map((tr, i) => (
-                <g key={i} transform={tr}>
-                  <path d={`M${hx - 9} ${hy - 13} Q${hx - 24} ${hy - 14} ${hx - 27} ${hy - 36} Q${hx - 21} ${hy - 23} ${hx - 5} ${hy - 19} Z`} strokeWidth={1.3} />
-                  <path d={`M${hx - 15} ${hy - 15} l-1 -3 M${hx - 20} ${hy - 19} l-1.4 -2.6 M${hx - 24} ${hy - 25} l-1.6 -1.8`} strokeWidth={0.7} />
-                </g>
-              ))}
-            </g>
-          ) : (
-            <g filter={glow} fill="none">
-              {[undefined, MIRROR].map((tr, i) => (
-                <path
-                  key={i}
-                  transform={tr}
-                  d={`M${hx - 8} ${hy - 16} L${hx - 14} ${hy - 30} L${hx - 24} ${hy - 40} M${hx - 14} ${hy - 30} L${hx - 10} ${hy - 42} M${hx - 19} ${hy - 35} L${hx - 28} ${hy - 33} M${hx - 12} ${hy - 37} L${hx - 6} ${hy - 46}`}
-                  strokeWidth={1.4}
-                />
-              ))}
-            </g>
-          ))}
-        <path
-          d={`M${hx - 14} ${hy} C${hx - 14} ${hy - 19} ${hx + 14} ${hy - 19} ${hx + 14} ${hy} L${hx + 12} ${hy + 8} Q${hx + 9} ${hy + 14} ${hx} ${hy + 18} Q${hx - 9} ${hy + 14} ${hx - 12} ${hy + 8} Z`}
-          strokeWidth={1.5}
-        />
-        <path d={`M${hx + 10} ${hy + 3} L${hx + 13.6} ${hy + 1} L${hx + 12} ${hy + 8} Q${hx + 9} ${hy + 13.5} ${hx + 5} ${hy + 16.5} Z`} fill={hatch} stroke="none" />
-        {/* Nase, Mund */}
-        <path d={`M${hx + 1} ${hy + 9} l1.2 2.4 l-1.6 0.3`} fill="none" strokeWidth={0.9} />
-        <path
-          d={
-            raised
-              ? `M${hx - 3.5} ${hy + 13} Q${hx} ${hy + 16.5} ${hx + 3.5} ${hy + 13} Z`
-              : hunched
-                ? `M${hx - 2} ${hy + 14.4} L${hx + 2} ${hy + 14.4}`
-                : `M${hx - 3} ${hy + 13.8} L${hx + 1} ${hy + 13.8} Q${hx + 2.8} ${hy + 13.6} ${hx + 3.6} ${hy + 12.6}`
-          }
-          fill={raised ? B : 'none'}
-          strokeWidth={0.9}
-        />
-        {/* Male */}
-        {f >= 2 && (
-          <path
-            d={
-              demon
-                ? `M${hx - 11} ${hy + 7} l2 2 l-1.5 2 l2 2 M${hx + 11} ${hy + 7} l-2 2 l1.5 2 l-2 2`
-                : `M${hx - 9} ${hy + 8} l-0.6 4.5 M${hx - 7} ${hy + 8} l-0.4 3.5 M${hx + 9} ${hy + 8} l0.6 4.5 M${hx + 7} ${hy + 8} l0.4 3.5`
-            }
-            fill="none"
-            strokeWidth={1}
-            filter={demon ? undefined : glow}
-          />
-        )}
-        {scars >= 1 && <path d={`M${hx - 11} ${hy + 6} l3 5 M${hx - 11} ${hy + 8.5} l2 -0.6 M${hx - 10} ${hy + 10} l2 -0.6`} fill="none" strokeWidth={0.8} />}
-
-        {/* Haare */}
-        <g className={anim('av-sway')} style={{ transformOrigin: `${hx}px ${hy}px` }}>
-          {hood ? (
-            <path d={shape(BANGS, hx, hy)} strokeWidth={1.3} />
-          ) : (
-            <>
-              <path d={shape(HAIR, hx, hy)} strokeWidth={1.6} fill={lightHair ? W : B} />
-              {!lightHair && <path d={shape(HAIR, hx, hy)} fill={hatch} stroke="none" opacity={demon && f >= 6 ? 1 : 0.35} />}
-              <path
-                d={`M${hx + 9} ${hy - 20} Q${hx + 2} ${hy - 14} ${hx - 1} ${hy - 4} M${hx + 1} ${hy - 22} Q${hx - 6} ${hy - 14} ${hx - 8} ${hy - 4} M${hx + 15} ${hy - 12} Q${hx + 12} ${hy - 8} ${hx + 11} ${hy - 4} M${hx - 12} ${hy - 16} Q${hx - 15} ${hy - 8} ${hx - 14} ${hy + 4}`}
-                fill="none"
-                strokeWidth={0.8}
-                stroke={lightHair ? B : W}
-              />
-            </>
-          )}
-        </g>
-        {hood && (
-          <path
-            d={`M${hx - 17} ${hy + 12} Q${hx - 21} ${hy - 22} ${hx} ${hy - 23} Q${hx + 21} ${hy - 22} ${hx + 17} ${hy + 12} L${hx + 14} ${hy + 10} Q${hx + 16} ${hy - 17} ${hx} ${hy - 18} Q${hx - 16} ${hy - 17} ${hx - 14} ${hy + 10} Z`}
-          />
-        )}
-
-        {/* Augenbrauen und Augen */}
-        {!hunched && <path d={`M${hx - 3} ${hy - 0.4} L${hx - 10.5} ${hy - 2.4} M${hx + 3} ${hy - 0.4} L${hx + 10.5} ${hy - 2.4}`} fill="none" strokeWidth={1.3} />}
-        <g className={hunched ? undefined : anim('av-eyes')} style={{ transformOrigin: `${hx}px ${hy + 5}px` }}>
-          {([-1, 1] as const).map((side) => (
-            <Eye
-              key={side}
-              x={hx + side * 6.5}
-              y={hy + 4}
-              side={side}
-              mode={hunched ? 'tired' : f >= 5 ? (demon ? 'demon' : 'light') : 'open'}
-              ids={ids}
-              anim={anim}
-            />
-          ))}
-        </g>
-
-        {/* Krone oder Stirnreif */}
-        {c.apex >= 1 ? (
-          <g filter={glow}>
+        {c.armor >= 1 ? (
+          <g>
+            <path d={`M102 ${sY + 1} Q120 ${sY - 2} 138 ${sY + 1} L134 174 L139 196 L101 196 L106 174 Z`} strokeWidth={1.5} />
+            <path d={`M128 ${sY + 2} L137.5 ${sY + 2} L139 196 L130 196 Z`} fill={hatch} stroke="none" />
             <path
-              d={`M${hx - 14} ${hy - 12} L${hx - 15} ${hy - 25} L${hx - 8} ${hy - 18} L${hx - 4} ${hy - 31} L${hx} ${hy - 20} L${hx + 4} ${hy - 31} L${hx + 8} ${hy - 18} L${hx + 15} ${hy - 25} L${hx + 14} ${hy - 12} Z`}
-              strokeWidth={1.4}
+              d={`M114 ${sY} L120 ${sY + 7} L126 ${sY} M116 ${sY + 4} L124 ${sY + 8} M124 ${sY + 4} L116 ${sY + 8} M116 ${sY + 9} L124 ${sY + 13} M124 ${sY + 9} L116 ${sY + 13}`}
+              fill="none"
+              strokeWidth={0.8}
             />
-            <path d={`M${hx - 14} ${hy - 15} L${hx + 14} ${hy - 15}`} strokeWidth={0.8} />
-            {[-8, 0, 8].map((dx) => (
-              <circle key={dx} cx={hx + dx} cy={hy - 13.5} r={1.2} fill={W} stroke="none" />
-            ))}
+            <path d="M120 184 L120 196" fill="none" strokeWidth={0.6} strokeOpacity={0.7} />
           </g>
         ) : (
-          c.head >= 2 && (
-            <g>
-              <path d={`M${hx - 15} ${hy - 6} Q${hx} ${hy - 12} ${hx + 15} ${hy - 6}`} fill="none" strokeWidth={2} />
-              <path
-                d={`M${hx} ${hy - 13} l2.4 3 l-2.4 3 l-2.4 -3 Z`}
-                fill={c.head >= 3 ? W : B}
-                filter={c.head >= 3 ? glow : undefined}
-                className={c.head >= 3 ? anim('av-pulse') : undefined}
-              />
+          <g>
+            <path d={`M102 ${sY + 1} Q120 ${sY - 2} 138 ${sY + 1} L133 176 L107 176 Z`} strokeWidth={1.5} />
+            <path d={`M128 ${sY + 2} L137.5 ${sY + 2} L132.8 175 L126 175 Z`} fill={hatch} stroke="none" />
+            <path d={`M113 ${sY} L120 ${sY + 9} L127 ${sY}`} fill="none" strokeWidth={1} />
+            <path d="M108 150 l3 4 M131 160 l-2 4" fill="none" strokeWidth={0.7} strokeOpacity={0.7} />
+          </g>
+        )}
+        {c.armor >= 2 && <path d={`M106 ${sY + 40} L134 ${sY + 40} L134 172 L106 172 Z`} fill={mail} stroke="none" />}
+        {scars >= 3 && <path d="M107 146 l4 -3 l1 5 l4 -4" fill="none" strokeWidth={0.9} />}
+        {c.armor >= 3 && (
+          <g>
+            <path d={`M104 ${sY + 5} Q120 ${sY + 1} 136 ${sY + 5} L134 164 Q120 171 106 164 Z`} strokeWidth={1.5} />
+            <path d={`M124 ${sY + 4} Q131 ${sY + 4} 136 ${sY + 5} L134 164 Q128 168 124 169 Z`} fill={hatch} stroke="none" />
+            <path d={`M120 ${sY + 3} L120 169`} strokeWidth={0.8} />
+            <path d="M106 165 Q120 174 134 165 L135 171 Q120 180 105 171 Z" />
+          </g>
+        )}
+        {c.armor >= 4 && <path d={`M110 ${sY + 12} q4 6 0 12 M130 ${sY + 12} q-4 6 0 12 M110 156 q10 7 20 0`} fill="none" strokeWidth={0.7} />}
+        {c.armor >= 5 && (
+          <g>
+            <path d={`M113 ${sY + 18} L127 ${sY + 18} L127 ${sY + 26} Q127 ${sY + 33} 120 ${sY + 37} Q113 ${sY + 33} 113 ${sY + 26} Z`} />
+            <path d={star4(120, sY + 26, 5)} fill={W} stroke="none" />
+          </g>
+        )}
+
+        {/* ---- Gürtel ---- */}
+        {c.belt >= 1 && (
+          <g>
+            <rect x={105} y={172} width={30} height={5} />
+            <rect x={117} y={171} width={6} height={7} />
+            <line x1={120} y1={172} x2={120} y2={176} strokeWidth={0.7} />
+          </g>
+        )}
+        {c.belt >= 2 && (
+          <g>
+            <rect x={124} y={177} width={8} height={9} rx={1.5} />
+            <path d="M124 180 L132 180" strokeWidth={0.7} />
+          </g>
+        )}
+        {c.belt >= 3 && (
+          <g>
+            <path d={limb([105, 179], [98, 203], 2.2, 1.4)} />
+            <path d="M102 176 L110 179" strokeWidth={1.6} />
+            <circle cx={108} cy={173} r={1.8} />
+          </g>
+        )}
+        {c.belt >= 4 &&
+          [136.5, 141].map((x, i) => (
+            <g key={`po${x}`}>
+              <rect x={x - 1} y={178 + i} width={2} height={3} />
+              <circle cx={x} cy={184.5 + i} r={2.6} />
+              <path d={`M${x - 2} ${185 + i} L${x + 2} ${185 + i}`} strokeWidth={0.6} />
+            </g>
+          ))}
+
+        {/* ---- Schwert ---- */}
+        <g transform={`translate(${f1(guard[0])} ${f1(guard[1])}) rotate(${raised ? -140 : 0})`}>
+          <Sword n={c.sword} magic={c.magic >= 6} ids={ids} anim={anim} />
+        </g>
+
+        {/* ---- Arme ---- */}
+        {arms.map(([sh, el, ha], i) => {
+          const [mx, my] = lerp(el, ha, 0.6)
+          const [ax, ay] = lerp(el, ha, 0.2)
+          return (
+            <g key={`arm${i}`}>
+              <path d={bent(sh, el, ha, 5.4, 4.2, 3.3)} />
+              {c.armor >= 2 && <path d={limb(sh, el, 5.2, 4)} fill={mail} stroke="none" />}
+              {i === 1 && <path d={bent(sh, el, ha, 2.2, 1.6, 1.2)} transform="translate(2 0)" fill={hatch} stroke="none" />}
+              {c.arms >= 1 && (
+                <g>
+                  <path d={limb(lerp(el, ha, 0.3), lerp(el, ha, 0.92), 4.6, 3.9)} />
+                  <path d={across(el, ha, 0.6, 4.2)} strokeWidth={0.7} />
+                </g>
+              )}
+              {c.arms >= 3 && <path d={star4(mx, my, 2.2)} fill={W} stroke="none" />}
+              {hand(el, ha)}
+              {i === 0 && scars >= 2 && c.arms < 1 && <path d={`${across(el, ha, 0.4, 4.4)} ${across(el, ha, 0.52, 4.2)}`} strokeWidth={1} />}
+              {f >= 2 && (
+                <path
+                  d={demon ? `M${f1(ax)} ${f1(ay)} l2 4 l-3 3 l2 4` : `M${f1(ax)} ${f1(ay)} q3 6 0 12`}
+                  fill="none"
+                  strokeWidth={1.1}
+                  filter={demon ? undefined : glow}
+                />
+              )}
             </g>
           )
+        })}
+        {/* Funken in der linken Hand */}
+        {c.magic >= 1 && (
+          <g filter={glow}>
+            {[
+              [-6, 6, 3.2],
+              [5, 9, 2.4],
+              [-2, 12, 2],
+              [7, 2, 1.6],
+            ].map(([dx, dy, r], i) => (
+              <path key={i} d={star4(haL[0] + dx, haL[1] + dy, r)} fill={W} stroke="none" className={anim('av-spark')} style={{ animationDelay: `${-i * 0.3}s` }} />
+            ))}
+          </g>
         )}
+        {/* Dämonenklauen */}
+        {f >= 6 && demon && (
+          <path d={`M${haL[0] - 3} ${haL[1] + 7} q-2 4 -5 5 M${haL[0]} ${haL[1] + 8} q-1 5 -3 7 M${haL[0] + 3} ${haL[1] + 7} q0 5 -1 7`} fill="none" strokeWidth={1.4} />
+        )}
+
+        {/* ---- Schultern ---- */}
+        {c.shoulders >= 1 &&
+          (c.shoulders >= 3 ? [undefined, MIRROR] : [undefined]).map((tr, i) => (
+            <g key={`sh${i}`} transform={tr}>
+              <path d={`M95 ${sY + 14} Q93 ${sY - 3} 109 ${sY - 2} L110 ${sY + 5} Q101 ${sY + 4} 99 ${sY + 15} Z`} strokeWidth={1.4} />
+              {c.shoulders >= 2 && (
+                <g>
+                  <path d={`M93 ${sY + 19} Q92 ${sY + 8} 98 ${sY + 9} L99 ${sY + 15} Z`} />
+                  <circle cx={104} cy={sY + 1} r={0.9} fill={W} stroke="none" />
+                </g>
+              )}
+              {c.shoulders >= 4 && <path d={`M96 ${sY + 2} L86 ${sY - 12} L102 ${sY - 3} Z M101 ${sY - 2} L96 ${sY - 14} L106 ${sY - 3} Z`} />}
+            </g>
+          ))}
+        {c.cape >= 3 &&
+          Array.from({ length: 13 }, (_, i) => {
+            const t = Math.PI + 0.25 + (i / 12) * (Math.PI - 0.5)
+            return <circle key={`fur${i}`} cx={f1(120 + Math.cos(t) * 21)} cy={f1(sY + 6 + Math.sin(t) * 7)} r={2.6} strokeWidth={1} />
+          })}
+        {c.cape === 2 && <path d={star4(hx - 9, sY + 4, 3)} fill={W} stroke="none" />}
+
+        {/* ---- Kopf ---- */}
+        <g transform={hunched ? `rotate(9 ${hx} ${hy + 16})` : undefined}>
+          {hood && (
+            <path d={`M${hx - 19} ${hy + 16} Q${hx - 26} ${hy - 28} ${hx} ${hy - 29} Q${hx + 26} ${hy - 28} ${hx + 19} ${hy + 16} L${hx + 23} ${sY + 5} L${hx - 23} ${sY + 5} Z`} />
+          )}
+          {/* Hörner oder Geweih */}
+          {f >= 4 &&
+            (demon ? (
+              <g>
+                {[undefined, MIRROR].map((tr, i) => (
+                  <g key={i} transform={tr}>
+                    <path d={`M${hx - 9} ${hy - 13} Q${hx - 24} ${hy - 14} ${hx - 27} ${hy - 36} Q${hx - 21} ${hy - 23} ${hx - 5} ${hy - 19} Z`} strokeWidth={1.3} />
+                    <path d={`M${hx - 15} ${hy - 15} l-1 -3 M${hx - 20} ${hy - 19} l-1.4 -2.6 M${hx - 24} ${hy - 25} l-1.6 -1.8`} strokeWidth={0.7} />
+                  </g>
+                ))}
+              </g>
+            ) : (
+              <g filter={glow} fill="none">
+                {[undefined, MIRROR].map((tr, i) => (
+                  <path
+                    key={i}
+                    transform={tr}
+                    d={`M${hx - 8} ${hy - 16} L${hx - 14} ${hy - 30} L${hx - 24} ${hy - 40} M${hx - 14} ${hy - 30} L${hx - 10} ${hy - 42} M${hx - 19} ${hy - 35} L${hx - 28} ${hy - 33} M${hx - 12} ${hy - 37} L${hx - 6} ${hy - 46}`}
+                    strokeWidth={1.4}
+                  />
+                ))}
+              </g>
+            ))}
+          <path
+            d={`M${hx - 14} ${hy} C${hx - 14} ${hy - 19} ${hx + 14} ${hy - 19} ${hx + 14} ${hy} L${hx + 12} ${hy + 8} Q${hx + 9} ${hy + 14} ${hx} ${hy + 18} Q${hx - 9} ${hy + 14} ${hx - 12} ${hy + 8} Z`}
+            strokeWidth={1.5}
+          />
+          <path d={`M${hx + 10} ${hy + 3} L${hx + 13.6} ${hy + 1} L${hx + 12} ${hy + 8} Q${hx + 9} ${hy + 13.5} ${hx + 5} ${hy + 16.5} Z`} fill={hatch} stroke="none" />
+          {/* Nase, Mund */}
+          <path d={`M${hx + 1} ${hy + 9} l1.2 2.4 l-1.6 0.3`} fill="none" strokeWidth={0.9} />
+          <path
+            d={
+              raised
+                ? `M${hx - 3.5} ${hy + 13} Q${hx} ${hy + 16.5} ${hx + 3.5} ${hy + 13} Z`
+                : hunched
+                  ? `M${hx - 2} ${hy + 14.4} L${hx + 2} ${hy + 14.4}`
+                  : `M${hx - 3} ${hy + 13.8} L${hx + 1} ${hy + 13.8} Q${hx + 2.8} ${hy + 13.6} ${hx + 3.6} ${hy + 12.6}`
+            }
+            fill={raised ? B : 'none'}
+            strokeWidth={0.9}
+          />
+          {/* Male */}
+          {f >= 2 && (
+            <path
+              d={
+                demon
+                  ? `M${hx - 11} ${hy + 7} l2 2 l-1.5 2 l2 2 M${hx + 11} ${hy + 7} l-2 2 l1.5 2 l-2 2`
+                  : `M${hx - 9} ${hy + 8} l-0.6 4.5 M${hx - 7} ${hy + 8} l-0.4 3.5 M${hx + 9} ${hy + 8} l0.6 4.5 M${hx + 7} ${hy + 8} l0.4 3.5`
+              }
+              fill="none"
+              strokeWidth={1}
+              filter={demon ? undefined : glow}
+            />
+          )}
+          {scars >= 1 && <path d={`M${hx - 11} ${hy + 6} l3 5 M${hx - 11} ${hy + 8.5} l2 -0.6 M${hx - 10} ${hy + 10} l2 -0.6`} fill="none" strokeWidth={0.8} />}
+
+          {/* Haare */}
+          <g className={anim('av-sway')} style={{ transformOrigin: `${hx}px ${hy}px` }}>
+            {hood ? (
+              <path d={shape(BANGS, hx, hy)} strokeWidth={1.3} />
+            ) : (
+              <>
+                <path d={shape(HAIR, hx, hy)} strokeWidth={1.6} fill={lightHair ? W : B} />
+                {!lightHair && <path d={shape(HAIR, hx, hy)} fill={hatch} stroke="none" opacity={demon && f >= 6 ? 1 : 0.35} />}
+                <path
+                  d={`M${hx + 9} ${hy - 20} Q${hx + 2} ${hy - 14} ${hx - 1} ${hy - 4} M${hx + 1} ${hy - 22} Q${hx - 6} ${hy - 14} ${hx - 8} ${hy - 4} M${hx + 15} ${hy - 12} Q${hx + 12} ${hy - 8} ${hx + 11} ${hy - 4} M${hx - 12} ${hy - 16} Q${hx - 15} ${hy - 8} ${hx - 14} ${hy + 4}`}
+                  fill="none"
+                  strokeWidth={0.8}
+                  stroke={lightHair ? B : W}
+                />
+              </>
+            )}
+          </g>
+          {hood && (
+            <path
+              d={`M${hx - 17} ${hy + 12} Q${hx - 21} ${hy - 22} ${hx} ${hy - 23} Q${hx + 21} ${hy - 22} ${hx + 17} ${hy + 12} L${hx + 14} ${hy + 10} Q${hx + 16} ${hy - 17} ${hx} ${hy - 18} Q${hx - 16} ${hy - 17} ${hx - 14} ${hy + 10} Z`}
+            />
+          )}
+
+          {/* Augenbrauen und Augen */}
+          {!hunched && <path d={`M${hx - 3} ${hy - 0.4} L${hx - 10.5} ${hy - 2.4} M${hx + 3} ${hy - 0.4} L${hx + 10.5} ${hy - 2.4}`} fill="none" strokeWidth={1.3} />}
+          <g className={hunched ? undefined : anim('av-eyes')} style={{ transformOrigin: `${hx}px ${hy + 5}px` }}>
+            {([-1, 1] as const).map((side) => (
+              <Eye
+                key={side}
+                x={hx + side * 6.5}
+                y={hy + 4}
+                side={side}
+                mode={hunched ? 'tired' : f >= 5 ? (demon ? 'demon' : 'light') : 'open'}
+                ids={ids}
+                anim={anim}
+              />
+            ))}
+          </g>
+
+          {/* Krone oder Stirnreif */}
+          {c.apex >= 1 ? (
+            <g filter={glow}>
+              <path
+                d={`M${hx - 14} ${hy - 12} L${hx - 15} ${hy - 25} L${hx - 8} ${hy - 18} L${hx - 4} ${hy - 31} L${hx} ${hy - 20} L${hx + 4} ${hy - 31} L${hx + 8} ${hy - 18} L${hx + 15} ${hy - 25} L${hx + 14} ${hy - 12} Z`}
+                strokeWidth={1.4}
+              />
+              <path d={`M${hx - 14} ${hy - 15} L${hx + 14} ${hy - 15}`} strokeWidth={0.8} />
+              {[-8, 0, 8].map((dx) => (
+                <circle key={dx} cx={hx + dx} cy={hy - 13.5} r={1.2} fill={W} stroke="none" />
+              ))}
+            </g>
+          ) : (
+            c.head >= 2 && (
+              <g>
+                <path d={`M${hx - 15} ${hy - 6} Q${hx} ${hy - 12} ${hx + 15} ${hy - 6}`} fill="none" strokeWidth={2} />
+                <path
+                  d={`M${hx} ${hy - 13} l2.4 3 l-2.4 3 l-2.4 -3 Z`}
+                  fill={c.head >= 3 ? W : B}
+                  filter={c.head >= 3 ? glow : undefined}
+                  className={c.head >= 3 ? anim('av-pulse') : undefined}
+                />
+              </g>
+            )
+          )}
+        </g>
       </g>
     </g>
   )

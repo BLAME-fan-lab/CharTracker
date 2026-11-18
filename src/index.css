@@ -134,18 +134,6 @@ input[type='date']::-webkit-calendar-picker-indicator {
   transform-origin: center;
   animation: av-spin 3s linear infinite;
 }
-.av-float {
-  animation: av-float 3.6s ease-in-out infinite;
-}
-@keyframes av-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
-}
 .av-blink {
   animation: av-blink 1.6s steps(1) infinite;
 }
@@ -157,18 +145,6 @@ input[type='date']::-webkit-calendar-picker-indicator {
   71%,
   100% {
     opacity: 0.15;
-  }
-}
-.av-flicker {
-  animation: av-flicker 1.4s ease-in-out infinite;
-}
-@keyframes av-flicker {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
   }
 }
 .av-pulse {
@@ -207,8 +183,11 @@ input[type='date']::-webkit-calendar-picker-indicator {
   100% {
     transform: translate(0, 0);
   }
-  50% {
-    transform: translate(6px, -3px);
+  30% {
+    transform: translate(10px, -6px);
+  }
+  65% {
+    transform: translate(-6px, -2px);
   }
 }
 .av-spin {
@@ -276,8 +255,289 @@ input[type='date']::-webkit-calendar-picker-indicator {
     transform: rotate(0deg);
   }
   50% {
-    transform: rotate(-1.5deg);
+    transform: rotate(-2.5deg);
   }
+}
+
+.av-hover {
+  transform-box: view-box;
+  animation: av-hover 4.2s ease-in-out infinite;
+}
+@keyframes av-hover {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(3deg);
+  }
+}
+.av-hover-shadow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: av-hover-shadow 4.2s ease-in-out infinite;
+}
+@keyframes av-hover-shadow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.55);
+    opacity: 0.4;
+  }
+}
+.av-breathe {
+  animation: av-breathe 4s ease-in-out infinite;
+}
+@keyframes av-breathe {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.5px);
+  }
+}
+.av-flutter-strong {
+  transform-box: view-box;
+  animation: av-flutter-strong 3s ease-in-out infinite;
+}
+@keyframes av-flutter-strong {
+  0%,
+  100% {
+    transform: skewX(0deg);
+  }
+  30% {
+    transform: skewX(-8deg);
+  }
+  55% {
+    transform: skewX(-3deg);
+  }
+  80% {
+    transform: skewX(-9deg);
+  }
+}
+.av-flap {
+  transform-box: view-box;
+  animation: av-flap 2.8s ease-in-out infinite;
+}
+@keyframes av-flap {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  40% {
+    transform: rotate(-10deg);
+  }
+  55% {
+    transform: rotate(-11deg);
+  }
+}
+.av-shimmer {
+  transform-box: view-box;
+  animation: av-shimmer 3.2s ease-in-out infinite;
+}
+@keyframes av-shimmer {
+  0%,
+  100% {
+    transform: rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: rotate(-6deg);
+    opacity: 0.6;
+  }
+}
+.av-tree {
+  transform-box: view-box;
+  animation: av-tree 6s ease-in-out infinite;
+}
+@keyframes av-tree {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(1.4deg);
+  }
+}
+.av-grass {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: av-grass 2.6s ease-in-out infinite;
+}
+@keyframes av-grass {
+  0%,
+  100% {
+    transform: skewX(0deg);
+  }
+  50% {
+    transform: skewX(-14deg);
+  }
+}
+.av-mist {
+  animation: av-mist 9s linear infinite;
+}
+.av-mist-rev {
+  animation: av-mist 14s linear infinite reverse;
+}
+@keyframes av-mist {
+  from {
+    transform: translateX(-40px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.av-flap-fast {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: av-flap-fast 0.45s ease-in-out infinite alternate;
+}
+@keyframes av-flap-fast {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(0.25);
+  }
+}
+.av-wander {
+  animation: av-wander 7s ease-in-out infinite;
+}
+@keyframes av-wander {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(8px, -6px);
+  }
+  50% {
+    transform: translate(0, -12px);
+  }
+  75% {
+    transform: translate(-8px, -5px);
+  }
+}
+.av-spark {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: av-spark 1.2s ease-in-out infinite;
+}
+@keyframes av-spark {
+  0%,
+  100% {
+    transform: scale(0.5) rotate(0deg);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.3) rotate(45deg);
+    opacity: 1;
+  }
+}
+.av-rune {
+  animation: av-rune 5s ease-in-out infinite;
+}
+@keyframes av-rune {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+.av-rise {
+  animation: av-rise 3.5s ease-out infinite;
+}
+@keyframes av-rise {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-46px);
+    opacity: 0;
+  }
+}
+.av-mote {
+  animation: av-mote linear infinite;
+}
+@keyframes av-mote {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.7;
+  }
+  80% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(10px, -50px);
+    opacity: 0;
+  }
+}
+.av-glint {
+  animation: av-glint 3.8s ease-in-out infinite;
+}
+@keyframes av-glint {
+  0% {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  6% {
+    opacity: 0.9;
+  }
+  34% {
+    transform: translateY(92px);
+    opacity: 0.9;
+  }
+  38%,
+  100% {
+    transform: translateY(92px);
+    opacity: 0;
+  }
+}
+.av-lurk {
+  animation: av-lurk 6s ease-in-out infinite;
+}
+@keyframes av-lurk {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-4px);
+  }
+}
+.av-waver {
+  transform-box: view-box;
+  animation: av-waver 1.8s ease-in-out infinite;
+}
+@keyframes av-waver {
+  0%,
+  100% {
+    transform: skewX(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: skewX(5deg);
+    opacity: 0.6;
+  }
+}
+.av-spin-mid {
+  transform-box: view-box;
+  animation: av-spin 14s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
