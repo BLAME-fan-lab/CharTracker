@@ -129,35 +129,21 @@ input[type='date']::-webkit-calendar-picker-indicator {
     transform: translate(-14px, 40px);
   }
 }
-.av-bob {
-  animation: av-bob 3.2s ease-in-out infinite;
+.av-leaf-spin {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: av-spin 3s linear infinite;
 }
-.av-bob-slow {
-  animation: av-bob 4.4s ease-in-out infinite;
+.av-float {
+  animation: av-float 3.6s ease-in-out infinite;
 }
-@keyframes av-bob {
+@keyframes av-float {
   0%,
   100% {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-5px);
-  }
-}
-.av-sweep {
-  transform-box: view-box;
-  animation: av-sweep 9s ease-in-out infinite alternate;
-}
-.av-sweep-rev {
-  transform-box: view-box;
-  animation: av-sweep 11s ease-in-out infinite alternate-reverse;
-}
-@keyframes av-sweep {
-  from {
-    transform: rotate(-14deg);
-  }
-  to {
-    transform: rotate(14deg);
+    transform: translateY(-4px);
   }
 }
 .av-blink {
@@ -171,6 +157,18 @@ input[type='date']::-webkit-calendar-picker-indicator {
   71%,
   100% {
     opacity: 0.15;
+  }
+}
+.av-flicker {
+  animation: av-flicker 1.4s ease-in-out infinite;
+}
+@keyframes av-flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
   }
 }
 .av-pulse {
@@ -187,9 +185,6 @@ input[type='date']::-webkit-calendar-picker-indicator {
 }
 .av-twinkle {
   animation: av-pulse 3.4s ease-in-out infinite;
-}
-.av-flicker {
-  animation: av-blink 0.4s steps(1) infinite;
 }
 .av-flutter {
   transform-box: view-box;
@@ -216,54 +211,47 @@ input[type='date']::-webkit-calendar-picker-indicator {
     transform: translate(6px, -3px);
   }
 }
-.av-wind {
-  animation: av-wind 2.2s linear infinite;
-}
-@keyframes av-wind {
-  from {
-    transform: translateX(-40px);
-    opacity: 0;
-  }
-  30% {
-    opacity: 1;
-  }
-  to {
-    transform: translateX(60px);
-    opacity: 0;
-  }
-}
-.av-glitch {
-  animation: av-glitch 3.1s steps(1) infinite;
-}
-@keyframes av-glitch {
-  0%,
-  86% {
-    opacity: 0;
-    transform: translateX(0);
-  }
-  87% {
-    opacity: 1;
-    transform: translateX(-6px);
-  }
-  90% {
-    opacity: 1;
-    transform: translateX(8px);
-  }
-  93%,
-  100% {
-    opacity: 0;
-  }
-}
 .av-spin {
   transform-box: view-box;
   animation: av-spin 40s linear infinite;
+}
+.av-spin-fast {
+  transform-box: view-box;
+  animation: av-spin 9s linear infinite;
+}
+.av-orbit {
+  transform-box: view-box;
+  animation: av-spin 6s linear infinite;
 }
 @keyframes av-spin {
   to {
     transform: rotate(360deg);
   }
 }
-
+.av-dash {
+  animation: av-dash 6s linear infinite;
+}
+@keyframes av-dash {
+  to {
+    stroke-dashoffset: -90;
+  }
+}
+.av-firefly {
+  animation: av-firefly ease-in-out infinite alternate;
+}
+@keyframes av-firefly {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(8px, -10px);
+    opacity: 0.3;
+  }
+}
 .av-eyes {
   transform-box: view-box;
   animation: av-eyes 5.5s ease-in-out infinite;
@@ -289,52 +277,6 @@ input[type='date']::-webkit-calendar-picker-indicator {
   }
   50% {
     transform: rotate(-1.5deg);
-  }
-}
-.av-scarf {
-  transform-box: view-box;
-  animation: av-scarf 1.8s ease-in-out infinite;
-}
-@keyframes av-scarf {
-  0%,
-  100% {
-    transform: skewY(0deg) scaleX(1);
-  }
-  50% {
-    transform: skewY(-5deg) scaleX(0.95);
-  }
-}
-
-.av-shaft {
-  animation: av-shaft 7s ease-in-out infinite;
-}
-@keyframes av-shaft {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  40% {
-    opacity: 0.55;
-  }
-  42% {
-    opacity: 0.9;
-  }
-  44% {
-    opacity: 0.5;
-  }
-}
-.av-lift {
-  animation: av-lift 14s ease-in-out infinite;
-}
-@keyframes av-lift {
-  0%,
-  10%,
-  100% {
-    transform: translateY(0);
-  }
-  45%,
-  60% {
-    transform: translateY(-150px);
   }
 }
 

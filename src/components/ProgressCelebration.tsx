@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { settingsRepo, useSettings } from '../data'
 import { ACHIEVEMENTS, evaluateAchievements } from '../domain/achievements'
-import { avatarState } from '../domain/avatar'
+import { avatarState, unlockLabel, type AvatarPath } from '../domain/avatar'
 import { SKILL_NAMES, type SkillKey } from '../domain/characterSheet'
 import { detectProgress, isBigEvent, sameSnapshot, snapshot, type ProgressEvent } from '../domain/progressEvents'
 import { Avatar } from '../features/character/Avatar'
@@ -90,6 +90,7 @@ export function ProgressCelebration() {
       {big.length > 0 && (
         <CelebrationOverlay
           events={big}
+          path={settings?.avatarPath ?? 'demon'}
           onClose={() => setBig([])}
           onShow={() => {
             setBig([])
@@ -101,7 +102,17 @@ export function ProgressCelebration() {
   )
 }
 
-function CelebrationOverlay({ events, onClose, onShow }: { events: ProgressEvent[]; onClose: () => void; onShow: () => void }) {
+function CelebrationOverlay({
+  events,
+  path,
+  onClose,
+  onShow,
+}: {
+  events: ProgressEvent[]
+  path: AvatarPath
+  onClose: () => void
+  onShow: () => void
+}) {
   const confetti = CONFETTI
   const ranks = events.filter((e) => e.kind === 'rank-up')
   const achievements = events.filter((e) => e.kind === 'achievement')
@@ -143,7 +154,7 @@ function CelebrationOverlay({ events, onClose, onShow }: { events: ProgressEvent
       >
         {items.length > 0 ? (
           <div className="mx-auto w-40 overflow-hidden rounded-2xl border border-zinc-700 bg-black">
-            <Avatar c={avatarState(topStep * 10).counts} className="block h-auto w-full" />
+            <Avatar c={avatarState(topStep * 10).counts} path={path} className="block h-auto w-full" />
           </div>
         ) : (
           <div className="glow mx-auto grid size-20 place-items-center rounded-full bg-amber-400/15 text-amber-300 ring-2 ring-amber-400/50">
@@ -179,7 +190,7 @@ function CelebrationOverlay({ events, onClose, onShow }: { events: ProgressEvent
             <li key={`i${u.step}`} className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2 font-mono ring-1 ring-white/20">
               <Sparkles className="size-4 shrink-0 text-zinc-100" />
               <div>
-                <div className="text-sm font-semibold text-zinc-100">{u.label}</div>
+                <div className="text-sm font-semibold text-zinc-100">{unlockLabel(u, path)}</div>
                 <div className="text-xs text-zinc-400">
                   Level {u.step * 10} · Stufe {u.step}/99
                 </div>

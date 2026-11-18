@@ -1,8 +1,10 @@
 import { Eye, Lock, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
-import { AVATAR_UNLOCKS, avatarState } from '../../domain/avatar'
+import { settingsRepo } from '../../data'
+import { AVATAR_PATH_LABEL, AVATAR_UNLOCKS, avatarState, unlockLabel } from '../../domain/avatar'
 import { cx } from '../../lib/cx'
 import { Avatar } from './Avatar'
+import { useAvatarPath } from './useAvatarPath'
 
 const pad = (n: number) => String(n).padStart(3, '0')
 
@@ -18,14 +20,15 @@ export function AvatarStage({
 }) {
   const shown = preview ?? level
   const state = avatarState(shown)
+  const path = useAvatarPath()
 
   return (
     <div className="bg-black">
       <div className="relative">
-        <Avatar c={state.counts} className="mx-auto block h-auto w-full max-w-[19rem]" />
+        <Avatar c={state.counts} path={path} className="mx-auto block h-auto w-full max-w-[19rem]" />
         <div className="pointer-events-none absolute inset-x-3 top-2.5 flex items-start justify-between font-mono text-[10px] tracking-[0.2em] text-zinc-300 uppercase">
           <span>
-            {preview != null ? 'Vorschau' : 'Subjekt'} · Lvl {pad(Math.floor(shown))}
+            {preview != null ? 'Vorschau' : 'Held'} · Lvl {pad(Math.floor(shown))}
           </span>
           <span>Stufe {state.step}/99</span>
         </div>
@@ -65,6 +68,7 @@ export function AvatarStage({
 /** Inventar: freigeschaltete Ausrüstung, nächste Verwandlung, Rest gesperrt */
 export function AvatarInventory({ level, onPreview }: { level: number; onPreview: (level: number) => void }) {
   const [all, setAll] = useState(false)
+  const path = useAvatarPath()
   const state = avatarState(level)
   const into = level - state.step * 10
   const items = all
@@ -111,14 +115,31 @@ export function AvatarInventory({ level, onPreview }: { level: number; onPreview
               >
                 <span className="w-9 shrink-0 tabular-nums text-zinc-500">{pad(u.step * 10)}</span>
                 {got ? <span className="size-1.5 shrink-0 bg-zinc-100" /> : <Lock className="size-3 shrink-0" />}
-                <span className="min-w-0 truncate">{got || isNext ? u.label : '???'}</span>
+                <span className="min-w-0 truncate">{got || isNext ? unlockLabel(u, path) : '???'}</span>
               </button>
             </li>
           )
         })}
       </ul>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-zinc-800 pt-3">
+        <span className="text-[11px] text-zinc-400">Verschmelzung ab Level 800</span>
+        <div className="flex overflow-hidden rounded-md border border-zinc-700 text-[11px] tracking-wider uppercase" role="group" aria-label="Pfad der Verschmelzung">
+          {(['spirit', 'demon'] as const).map((p) => (
+            <button
+              key={p}
+              type="button"
+              aria-pressed={path === p}
+              onClick={() => void settingsRepo.updateSettings({ avatarPath: p })}
+              className={cx('px-2.5 py-1', path === p ? 'bg-zinc-100 text-black' : 'text-zinc-400 hover:text-white')}
+            >
+              {AVATAR_PATH_LABEL[p]}
+            </button>
+          ))}
+        </div>
+      </div>
       <p className="mt-3 text-[10px] leading-relaxed text-zinc-500">
-        Alle 10 Charakterlevel bekommt dein Wanderer ein Teil Ausrüstung oder verwandelt sich. Antippen zeigt die Stufe in der Vorschau.
+        Alle 10 Charakterlevel wird dein Held ein Stück stärker: neue Ausrüstung, Magie, Begleiter und am Ende die Verschmelzung. Antippen zeigt
+        die Stufe in der Vorschau.
       </p>
     </section>
   )

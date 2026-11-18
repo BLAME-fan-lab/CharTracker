@@ -1,153 +1,163 @@
 /*
  * Avatar: alle 10 Charakterlevel eine neue Ausrüstung oder Verwandlung (99 Stufen bis Level 990).
- * Jeder Eintrag erhöht einen Zähler (z. B. „mouth“ 1 = Schal, 2 = Gasmaske, 3 = Filterkanister),
+ * Mittelalter-Fantasy: Schwert, Rüstung, Grimoire, Waldgeister und Dämonen.
+ * Jeder Eintrag erhöht einen Zähler (z. B. „sword“ 2 = Langschwert),
  * die Grafik zeichnet anhand dieser Zähler.
+ * Ab Stufe 80 beginnt die Verschmelzung – je nach gewähltem Pfad mit einem Waldgeist oder einem Dämon.
  */
 
 export type AvatarKey =
-  | 'mouth'
-  | 'headwear'
-  | 'eyes'
-  | 'backpack'
+  | 'armor'
   | 'legs'
-  | 'arms'
+  | 'sword'
   | 'belt'
-  | 'weapon'
+  | 'head'
   | 'shoulders'
-  | 'coat'
-  | 'chest'
-  | 'wrist'
+  | 'cape'
+  | 'arms'
+  | 'grimoire'
+  | 'tree'
   | 'posture'
+  | 'magic'
+  | 'shield'
   | 'scar'
-  | 'tally'
-  | 'building'
-  | 'crow'
-  | 'star'
+  | 'spirit'
   | 'moon'
-  | 'drone'
-  | 'ash'
-  | 'wire'
-  | 'searchlight'
-  | 'tower'
-  | 'monolith'
-  | 'trail'
-  | 'glitch'
-  | 'halo'
-  | 'echo'
+  | 'raven'
+  | 'castle'
+  | 'demon'
+  | 'star'
+  | 'mountain'
   | 'banner'
-  | 'wind'
+  | 'firefly'
+  | 'ruin'
+  | 'leaves'
+  | 'fusion'
   | 'apex'
+
+/** Pfad der Verschmelzung ab Stufe 80 */
+export type AvatarPath = 'spirit' | 'demon'
+
+export const AVATAR_PATH_LABEL: Record<AvatarPath, string> = {
+  spirit: 'Waldgeist',
+  demon: 'Dämon',
+}
 
 export interface AvatarUnlock {
   /** Stufe 1–99, erreicht bei Charakterlevel step × 10 */
   step: number
   key: AvatarKey
   label: string
+  /** abweichende Bezeichnung auf dem Dämonen-Pfad */
+  demon?: string
 }
 
-const L = (step: number, key: AvatarKey, label: string): AvatarUnlock => ({ step, key, label })
+const L = (step: number, key: AvatarKey, label: string, demon?: string): AvatarUnlock => ({ step, key, label, demon })
 
 export const AVATAR_UNLOCKS: AvatarUnlock[] = [
-  L(1, 'mouth', 'Wehender Schal'),
-  L(2, 'headwear', 'Kapuze'),
-  L(3, 'backpack', 'Rucksack'),
-  L(4, 'eyes', 'Schutzbrille'),
-  L(5, 'legs', 'Stiefel'),
-  L(6, 'arms', 'Armbinden'),
-  L(7, 'belt', 'Werkzeuggürtel'),
-  L(8, 'weapon', 'Eisenrohr'),
-  L(9, 'building', 'Eine Wand der Megastruktur'),
-  L(10, 'mouth', 'Gasmaske'),
-  L(11, 'posture', 'Aufrechter Gang'),
-  L(12, 'shoulders', 'Schulterplatte'),
-  L(13, 'building', 'Zweite Wand'),
-  L(14, 'backpack', 'Funkantenne'),
-  L(15, 'belt', 'Taschen am Gürtel'),
-  L(16, 'crow', 'Ein Wächter beobachtet dich'),
-  L(17, 'coat', 'Langer Mantel'),
-  L(18, 'scar', 'Eine Narbe verheilt'),
-  L(19, 'tally', 'Erste Kerbe im Rohr'),
-  L(20, 'drone', 'Begleit-Drohne'),
-  L(21, 'building', 'Riesiges Rohr'),
-  L(22, 'legs', 'Knieschoner'),
-  L(23, 'wrist', 'Handgelenk-Display'),
-  L(24, 'ash', 'Ascheregen'),
-  L(25, 'tally', 'Zweite Kerbe'),
-  L(26, 'eyes', 'Nachtsicht-Linsen'),
-  L(27, 'building', 'Hängende Kabel'),
-  L(28, 'moon', 'Gigantische Schleuse'),
-  L(29, 'chest', 'Gurtzeug'),
-  L(30, 'mouth', 'Filterkanister'),
-  L(31, 'crow', 'Zweiter Wächter'),
-  L(32, 'shoulders', 'Zweite Schulterplatte'),
-  L(33, 'tally', 'Dritte Kerbe'),
-  L(34, 'wire', 'Stacheldraht'),
-  L(35, 'building', 'Ferne Brücke'),
-  L(36, 'arms', 'Kabel am Arm'),
-  L(37, 'scar', 'Zweite Narbe verheilt'),
-  L(38, 'weapon', 'Speerspitze'),
-  L(39, 'star', 'Ein Licht in der Tiefe'),
-  L(40, 'drone', 'Drohnen-Scheinwerfer'),
-  L(41, 'building', 'Treppe ins Nichts'),
-  L(42, 'chest', 'Brustpanzer'),
-  L(43, 'tally', 'Vierte Kerbe'),
-  L(44, 'searchlight', 'Lichtschacht'),
-  L(45, 'crow', 'Dritter Wächter'),
-  L(46, 'belt', 'Laterne'),
-  L(47, 'building', 'Kabelstränge'),
-  L(48, 'coat', 'Zerrissener Mantel'),
-  L(49, 'star', 'Zweites Licht'),
-  L(50, 'headwear', 'Helm'),
-  L(51, 'building', 'Endloser Schacht'),
-  L(52, 'tally', 'Fünfte Kerbe'),
-  L(53, 'ash', 'Dichter Ascheregen'),
-  L(54, 'arms', 'Mechanischer Arm'),
-  L(55, 'crow', 'Vierter Wächter'),
-  L(56, 'tower', 'Aufzugsschacht'),
-  L(57, 'building', 'Zweites Rohr'),
-  L(58, 'scar', 'Letzte Narbe verheilt'),
-  L(59, 'star', 'Drittes Licht'),
-  L(60, 'eyes', 'Leuchtendes Auge'),
-  L(61, 'building', 'Ferne Fassaden'),
-  L(62, 'tally', 'Sechste Kerbe'),
-  L(63, 'legs', 'Panzerstiefel'),
-  L(64, 'backpack', 'Satellitenschüssel'),
-  L(65, 'searchlight', 'Zweiter Lichtschacht'),
-  L(66, 'weapon', 'Speer mit Draht'),
-  L(67, 'crow', 'Fünfter Wächter'),
-  L(68, 'monolith', 'Altes Terminal'),
-  L(69, 'star', 'Viertes Licht'),
-  L(70, 'drone', 'Zweite Drohne'),
-  L(71, 'building', 'Durchbruch in der Wand'),
-  L(72, 'shoulders', 'Dornen auf den Schulterplatten'),
-  L(73, 'tally', 'Siebte Kerbe'),
-  L(74, 'chest', 'Energiekern'),
-  L(75, 'trail', 'Spuren im Staub'),
-  L(76, 'headwear', 'Helmkamm'),
-  L(77, 'glitch', 'Störsignal'),
-  L(78, 'moon', 'Gesprengte Schleuse'),
-  L(79, 'star', 'Fünftes Licht'),
-  L(80, 'coat', 'Wehender Umhang'),
-  L(81, 'arms', 'Zweiter mechanischer Arm'),
-  L(82, 'tally', 'Achte Kerbe'),
-  L(83, 'halo', 'Aura-Ring'),
-  L(84, 'ash', 'Aschesturm'),
-  L(85, 'posture', 'Siegerpose'),
-  L(86, 'banner', 'Warnzeichen'),
-  L(87, 'echo', 'Schatten-Echo'),
-  L(88, 'tally', 'Neunte Kerbe'),
-  L(89, 'halo', 'Doppelter Ring'),
-  L(90, 'weapon', 'Lichtstab'),
-  L(91, 'eyes', 'Visier-Schlitz'),
-  L(92, 'backpack', 'Schubdüsen'),
-  L(93, 'echo', 'Zweites Echo'),
-  L(94, 'tally', 'Zehnte Kerbe'),
-  L(95, 'halo', 'Dreifacher Ring'),
-  L(96, 'headwear', 'Antennenkrone'),
-  L(97, 'wind', 'Sturm'),
-  L(98, 'glitch', 'Die Realität bricht'),
-  L(99, 'apex', 'Lichtgestalt'),
+  L(1, 'armor', 'Lederwams'),
+  L(2, 'legs', 'Lederstiefel'),
+  L(3, 'sword', 'Eisenschwert'),
+  L(4, 'belt', 'Gürtel'),
+  L(5, 'head', 'Kapuze'),
+  L(6, 'shoulders', 'Lederschulter'),
+  L(7, 'cape', 'Reiseumhang'),
+  L(8, 'arms', 'Armschienen'),
+  L(9, 'grimoire', 'Ein Grimoire erwacht'),
+  L(10, 'armor', 'Kettenhemd'),
+  L(11, 'tree', 'Der Wald beginnt'),
+  L(12, 'posture', 'Aufrechter Gang'),
+  L(13, 'sword', 'Langschwert'),
+  L(14, 'belt', 'Gürteltasche'),
+  L(15, 'magic', 'Funken in der Hand'),
+  L(16, 'legs', 'Beinschienen'),
+  L(17, 'grimoire', 'Das Siegel leuchtet'),
+  L(18, 'shield', 'Rundschild'),
+  L(19, 'shoulders', 'Schulterplatte'),
+  L(20, 'scar', 'Eine Narbe verheilt'),
+  L(21, 'spirit', 'Ein Irrlicht folgt dir'),
+  L(22, 'magic', 'Magiekreis'),
+  L(23, 'tree', 'Zweiter Baum'),
+  L(24, 'head', 'Stirnreif'),
+  L(25, 'cape', 'Ordensmantel'),
+  L(26, 'moon', 'Mond über dem Wald'),
+  L(27, 'armor', 'Brustpanzer'),
+  L(28, 'raven', 'Ein Rabe'),
+  L(29, 'castle', 'Burg in der Ferne'),
+  L(30, 'arms', 'Panzerhandschuhe'),
+  L(31, 'magic', 'Schwebende Runen'),
+  L(32, 'tree', 'Dritter Baum'),
+  L(33, 'belt', 'Dolch'),
+  L(34, 'demon', 'Augen im Dunkel des Waldes'),
+  L(35, 'shoulders', 'Zweite Schulterplatte'),
+  L(36, 'spirit', 'Zweites Irrlicht'),
+  L(37, 'grimoire', 'Die Seiten füllen sich'),
+  L(38, 'sword', 'Verzierte Parierstange'),
+  L(39, 'star', 'Ein Stern'),
+  L(40, 'mountain', 'Berge am Horizont'),
+  L(41, 'scar', 'Zweite Narbe verheilt'),
+  L(42, 'tree', 'Vierter Baum'),
+  L(43, 'legs', 'Panzerstiefel'),
+  L(44, 'magic', 'Zweiter Magiekreis'),
+  L(45, 'shield', 'Wappenschild'),
+  L(46, 'raven', 'Zweiter Rabe'),
+  L(47, 'belt', 'Heiltränke'),
+  L(48, 'grimoire', 'Das Grimoire öffnet sich'),
+  L(49, 'banner', 'Ordensbanner'),
+  L(50, 'cape', 'Pelzkragen'),
+  L(51, 'demon', 'Ein Dämon lauert'),
+  L(52, 'armor', 'Verzierter Panzer'),
+  L(53, 'tree', 'Fünfter Baum'),
+  L(54, 'magic', 'Aura'),
+  L(55, 'arms', 'Verzierte Handschuhe'),
+  L(56, 'castle', 'Türme der Burg'),
+  L(57, 'spirit', 'Ein Waldgeist erscheint'),
+  L(58, 'sword', 'Runenklinge'),
+  L(59, 'star', 'Zweiter Stern'),
+  L(60, 'head', 'Edelstein im Stirnreif'),
+  L(61, 'firefly', 'Glühwürmchen'),
+  L(62, 'shoulders', 'Flügel-Schulterplatten'),
+  L(63, 'grimoire', 'Seiten umkreisen dich'),
+  L(64, 'scar', 'Letzte Narbe verheilt'),
+  L(65, 'tree', 'Sechster Baum'),
+  L(66, 'armor', 'Wappen auf der Brust'),
+  L(67, 'ruin', 'Steinkreis'),
+  L(68, 'demon', 'Dämonentor'),
+  L(69, 'magic', 'Magie umhüllt die Klinge'),
+  L(70, 'raven', 'Dritter Rabe'),
+  L(71, 'star', 'Dritter Stern'),
+  L(72, 'spirit', 'Der Waldgeist wächst'),
+  L(73, 'castle', 'Fahnen auf der Burg'),
+  L(74, 'sword', 'Großschwert'),
+  L(75, 'leaves', 'Fallende Blätter'),
+  L(76, 'tree', 'Siebter Baum'),
+  L(77, 'grimoire', 'Zweites Siegel'),
+  L(78, 'moon', 'Blutmond'),
+  L(79, 'star', 'Vierter Stern'),
+  L(80, 'fusion', 'Geistverschmelzung', 'Dämonenpakt'),
+  L(81, 'demon', 'Gebannter Dämon'),
+  L(82, 'fusion', 'Leuchtende Male', 'Dämonenmale'),
+  L(83, 'magic', 'Dritter Magiekreis'),
+  L(84, 'leaves', 'Blättersturm'),
+  L(85, 'fusion', 'Flügel aus Licht', 'Schattenschwingen'),
+  L(86, 'posture', 'Schwert erhoben'),
+  L(87, 'tree', 'Achter Baum'),
+  L(88, 'fusion', 'Geweih aus Licht', 'Hörner'),
+  L(89, 'grimoire', 'Das Grimoire glüht'),
+  L(90, 'sword', 'Königsklinge'),
+  L(91, 'fusion', 'Augen aus Licht', 'Dämonenaugen'),
+  L(92, 'cape', 'Königsmantel'),
+  L(93, 'magic', 'Magiesturm'),
+  L(94, 'spirit', 'Uralter Waldgeist'),
+  L(95, 'fusion', 'Eins mit dem Wald', 'Eins mit dem Dämon'),
+  L(96, 'castle', 'Die Burg erstrahlt'),
+  L(97, 'demon', 'Das Tor ist versiegelt'),
+  L(98, 'star', 'Sternenhimmel'),
+  L(99, 'apex', 'Magierkönig'),
 ]
+
+/** Bezeichnung passend zum gewählten Pfad */
+export const unlockLabel = (u: AvatarUnlock, path: AvatarPath) => (path === 'demon' && u.demon ? u.demon : u.label)
 
 export type AvatarCounts = Record<AvatarKey, number>
 

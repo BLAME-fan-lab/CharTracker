@@ -85,9 +85,11 @@ Probeklausur) oder Präfix (`Sonstiges:`).
 7. ✅ Belohnungen (6b): Ränge je 100 Level (Novize … Legende), Skill-Netz (Siebeneck), Rang-Pfad pro Baum,
    40 Errungenschaften (aus den Daten berechnet, Datum der ersten Erreichung gespeichert),
    Level-Up-Feier bei Rangaufstieg/Errungenschaft und Hinweis bei steigendem Charakterlevel
-8. ✅ Avatar (6c): schwarz-weißer Wanderer (eigene Figur, Manga-Linienstil) in einer endlosen Megastruktur (SVG, Strichschraffur).
-   Alle 10 Charakterlevel ein neues Teil oder eine Verwandlung (99 Stufen bis Level 990, `domain/avatar.ts`),
+8. ✅ Avatar (6c): eigener Ritter-Magier im Manga-Linienstil (SVG, schwarz-weiß, Strichschraffur).
+   Alle 10 Charakterlevel ein neues Teil (99 Stufen bis Level 990, `domain/avatar.ts`): Schwert, Rüstung,
+   schwebendes Grimoire, Magiekreise, Waldgeister, Dämonen, Burg und Wald. Ab Level 800 Verschmelzung mit
+   einem Waldgeist oder Dämon (Pfad unter der Ausrüstungsliste wählbar), Level 990: Magierkönig.
    Vorschau-Regler, Ausrüstungsliste und eigene Feier beim Überschreiten einer 10er-Grenze.
-   Animationen (Asche, Drohnen, Scheinwerfer, Störsignal) entfallen bei „Bewegung reduzieren“.
+   Animationen entfallen bei „Bewegung reduzieren“.
 
 Später: Strong-CSV-Import (Workouts, Gewichtsverlauf, PRs), Sync über Supabase.

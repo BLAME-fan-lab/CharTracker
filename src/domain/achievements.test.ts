@@ -62,7 +62,7 @@ describe('Fortschritts-Ereignisse', () => {
     expect(ev.map((e) => e.kind)).toEqual(['rank-up', 'rank-up', 'achievement', 'item', 'level-up'])
     expect(ev[0]).toMatchObject({ skill: null, rank: { name: 'Geselle' } })
     expect(ev[1]).toMatchObject({ skill: 'sport', rank: { name: 'Lehrling' } })
-    expect(ev[3]).toMatchObject({ unlock: { step: 20, label: 'Begleit-Drohne' } })
+    expect(ev[3]).toMatchObject({ unlock: { step: 20, label: 'Eine Narbe verheilt' } })
     expect(ev.filter(isBigEvent)).toHaveLength(4)
   })
   it('Ausrüstung nur beim Überschreiten einer 10er-Grenze', () => {

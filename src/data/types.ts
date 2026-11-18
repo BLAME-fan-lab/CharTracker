@@ -196,6 +196,8 @@ export interface AppSettings extends BaseRecord {
   levelSnapshot?: { character: number; skills: Record<string, number> } | null
   /** Errungenschaft-ID → Tag, an dem sie zuerst erreicht wurde */
   achievementDates?: Record<string, DateStr>
+  /** Pfad der Avatar-Verschmelzung ab Level 800 */
+  avatarPath?: 'spirit' | 'demon'
 }
 
 /* ---------- Charakter ---------- */
