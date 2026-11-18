@@ -1,6 +1,6 @@
 /*
  * Avatar: alle 10 Charakterlevel eine neue Ausrüstung oder Verwandlung (99 Stufen bis Level 990).
- * Jeder Eintrag erhöht einen Zähler (z. B. „mouth“ 1 = Halstuch, 2 = Gasmaske, 3 = Filterkanister),
+ * Jeder Eintrag erhöht einen Zähler (z. B. „mouth“ 1 = Schal, 2 = Gasmaske, 3 = Filterkanister),
  * die Grafik zeichnet anhand dieser Zähler.
  */
 
@@ -48,7 +48,7 @@ export interface AvatarUnlock {
 const L = (step: number, key: AvatarKey, label: string): AvatarUnlock => ({ step, key, label })
 
 export const AVATAR_UNLOCKS: AvatarUnlock[] = [
-  L(1, 'mouth', 'Halstuch gegen den Staub'),
+  L(1, 'mouth', 'Wehender Schal'),
   L(2, 'headwear', 'Kapuze'),
   L(3, 'backpack', 'Rucksack'),
   L(4, 'eyes', 'Schutzbrille'),

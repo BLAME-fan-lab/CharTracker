@@ -7,7 +7,7 @@ describe('Avatar-Stufen', () => {
     expect(AVATAR_UNLOCKS.map((u) => u.step)).toEqual(Array.from({ length: 99 }, (_, i) => i + 1))
   })
   it('Zähler pro Teil', () => {
-    expect(avatarState(0)).toMatchObject({ step: 0, next: { label: 'Halstuch gegen den Staub' } })
+    expect(avatarState(0)).toMatchObject({ step: 0, next: { label: 'Wehender Schal' } })
     expect(avatarState(0).unlocked).toHaveLength(0)
     const s = avatarState(142)
     expect(s.step).toBe(14)

@@ -264,6 +264,47 @@ input[type='date']::-webkit-calendar-picker-indicator {
   }
 }
 
+.av-eyes {
+  transform-box: view-box;
+  animation: av-eyes 5.5s ease-in-out infinite;
+}
+@keyframes av-eyes {
+  0%,
+  95%,
+  100% {
+    transform: scaleY(1);
+  }
+  97% {
+    transform: scaleY(0.1);
+  }
+}
+.av-sway {
+  transform-box: view-box;
+  animation: av-sway 4.5s ease-in-out infinite;
+}
+@keyframes av-sway {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-1.5deg);
+  }
+}
+.av-scarf {
+  transform-box: view-box;
+  animation: av-scarf 1.8s ease-in-out infinite;
+}
+@keyframes av-scarf {
+  0%,
+  100% {
+    transform: skewY(0deg) scaleX(1);
+  }
+  50% {
+    transform: skewY(-5deg) scaleX(0.95);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-sheet,
   .animate-fade,
