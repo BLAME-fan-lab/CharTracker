@@ -403,7 +403,10 @@ function achievementStats(
   }).length
   const doneMilestones = input.projectMilestones.filter((m) => m.doneDate)
 
+  const start = input.trackingStart <= today ? input.trackingStart : today
+
   return {
+    perfectDays: dailyAdherence(input.habits, ctx.done, start, today).filter((v) => v === 1).length,
     bestPerfectStreak: bestPerfectDayStreak(input.habits, ctx.done, today),
     bestHabitStreak: input.habits.reduce((m, h) => Math.max(m, bestHabitStreak(h, ctx.done, today)), 0),
     studyHours: sumBy(past(input.studyLogs), (l) => l.minutes) / 60,

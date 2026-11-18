@@ -198,6 +198,17 @@ export interface AppSettings extends BaseRecord {
   achievementDates?: Record<string, DateStr>
   /** Pfad der Avatar-Verschmelzung ab Level 800 */
   avatarPath?: 'spirit' | 'demon'
+  /** Fortschritt im Turm der Prüfungen */
+  combat?: CombatProgress
+}
+
+export interface CombatProgress {
+  /** höchste bezwungene Etage (0 = noch keine) */
+  floor: number
+  /** verbrauchte Kampftickets */
+  spent: number
+  wins: number
+  losses: number
 }
 
 /* ---------- Charakter ---------- */

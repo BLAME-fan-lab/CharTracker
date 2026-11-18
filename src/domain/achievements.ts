@@ -4,6 +4,8 @@
  */
 
 export interface AchievementStats {
+  /** Anzahl Tage, an denen alle Tagesziele erfüllt waren */
+  perfectDays: number
   bestPerfectStreak: number
   bestHabitStreak: number
   studyHours: number

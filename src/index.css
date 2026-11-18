@@ -525,10 +525,33 @@ input[type='date']::-webkit-calendar-picker-indicator {
   animation: av-spin 14s linear infinite;
 }
 
+.animate-hit {
+  animation: hit 0.45s ease-out;
+}
+@keyframes hit {
+  0% {
+    transform: translateX(0);
+    border-color: #f4f4f5;
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-sheet,
   .animate-fade,
   .animate-pop,
+  .animate-hit,
   .glow,
   [class*='av-'] {
     animation: none !important;

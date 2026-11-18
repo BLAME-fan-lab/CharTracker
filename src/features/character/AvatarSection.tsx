@@ -12,7 +12,18 @@ const pad = (n: number) => String(n).padStart(3, '0')
  * Bühne mit dem Avatar (schwarz-weiß).
  * Die Vorschau zeigt ausschließlich die nächste Stufe – alles danach bleibt gesperrt.
  */
-export function AvatarStage({ level, preview, onPreview }: { level: number; preview: boolean; onPreview: (on: boolean) => void }) {
+export function AvatarStage({
+  level,
+  preview,
+  onPreview,
+  onBook,
+}: {
+  level: number
+  preview: boolean
+  onPreview: (on: boolean) => void
+  /** Grimoire bzw. Schwert angetippt */
+  onBook?: (kind: 'zauber' | 'technik') => void
+}) {
   const path = useAvatarPath()
   const current = avatarState(level)
   const next = current.next
@@ -23,7 +34,35 @@ export function AvatarStage({ level, preview, onPreview }: { level: number; prev
   return (
     <div className="bg-black">
       <div className="relative">
-        <Avatar c={state.counts} path={path} className="mx-auto block h-auto w-full max-w-[19rem]" />
+        <div className="relative mx-auto w-full max-w-[19rem]">
+          <Avatar c={state.counts} path={path} className="block h-auto w-full" />
+          {onBook && !showing && (
+            <>
+              {state.counts.grimoire >= 1 && (
+                <button
+                  type="button"
+                  onClick={() => onBook('zauber')}
+                  className="absolute rounded-lg focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                  style={{ left: '16.7%', top: '43.6%', width: '18.3%', height: '20.7%' }}
+                  aria-label="Zauberbuch öffnen"
+                  title="Zauberbuch"
+                />
+              )}
+              <button
+                type="button"
+                onClick={() => onBook('technik')}
+                className="absolute rounded-lg focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                style={
+                  state.counts.posture >= 2
+                    ? { left: '62.5%', top: '7.1%', width: '27%', height: '28.6%' }
+                    : { left: '61.2%', top: '50%', width: '10%', height: '39.3%' }
+                }
+                aria-label="Kampftechniken öffnen"
+                title="Kampftechniken"
+              />
+            </>
+          )}
+        </div>
         <div className="pointer-events-none absolute inset-x-3 top-2.5 flex items-start justify-between font-mono text-[10px] tracking-[0.2em] text-zinc-300 uppercase">
           <span>
             {showing ? 'Vorschau' : 'Held'} · Lvl {pad(Math.floor(shownLevel))}

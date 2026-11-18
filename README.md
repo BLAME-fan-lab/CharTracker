@@ -91,5 +91,9 @@ Probeklausur) oder Präfix (`Sonstiges:`).
    einem Waldgeist oder Dämon (Pfad unter der Ausrüstungsliste wählbar), Level 990: Magierkönig.
    Vorschau nur auf die nächste Stufe (alles danach gesperrt), Ausrüstungsliste und eigene Feier beim Überschreiten einer 10er-Grenze.
    Animationen (schwebendes Grimoire, Atmen, Wind, Nebel, Funken, Flügelschlag) entfallen bei „Bewegung reduzieren“.
+9. ✅ Kampf (7): Turm der Prüfungen mit 100 Etagen und 10 Bossen (alles eigene Gegner, `domain/combat.ts`).
+   Kampfwerte aus den Skill-Bäumen und der Ausrüstung, Zauber (Grimoire antippen) und Kampftechniken (Schwert antippen)
+   werden über Skill-Level freigeschaltet. Kämpfe laufen automatisch und deterministisch ab („Kampf!“ drücken),
+   Kampftickets kommen aus perfekten Tagen und Trainings (3 zum Start). Fortschritt in `settings.combat`.
 
 Später: Strong-CSV-Import (Workouts, Gewichtsverlauf, PRs), Sync über Supabase.

@@ -3,7 +3,7 @@ import { ACHIEVEMENTS, bestFullStreak, evaluateAchievements, type AchievementSta
 import { nextRank, rankFor, RANKS } from './ranks'
 
 const zero: AchievementStats = {
-  bestPerfectStreak: 0, bestHabitStreak: 0, studyHours: 0, unitsDone: 0, modulesComplete: 0, bestGrade: null,
+  perfectDays: 0, bestPerfectStreak: 0, bestHabitStreak: 0, studyHours: 0, unitsDone: 0, modulesComplete: 0, bestGrade: null,
   trainings: 0, bestTrainingWeekStreak: 0, benchRatio: 0, pullups: 0, bestStandard: 0, booksDone: 0, hardBooksDone: 0,
   bestReadingWeekStreak: 0, musicHours: 0, musicMilestone: 0, projectMilestones: 0, largeMilestones: 0, projectHours: 0,
   todosDone: 0, characterLevel: 0, maxSkillLevel: 0, hasBackup: false,
