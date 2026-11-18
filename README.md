@@ -85,7 +85,7 @@ Probeklausur) oder Präfix (`Sonstiges:`).
 7. ✅ Belohnungen (6b): Ränge je 100 Level (Novize … Legende), Skill-Netz (Siebeneck), Rang-Pfad pro Baum,
    40 Errungenschaften (aus den Daten berechnet, Datum der ersten Erreichung gespeichert),
    Level-Up-Feier bei Rangaufstieg/Errungenschaft und Hinweis bei steigendem Charakterlevel
-8. ✅ Avatar (6c): schwarz-weißer Wanderer im Anime-Linienstil in einer Ruinenstadt (SVG, dystopisch, Manga-Raster).
+8. ✅ Avatar (6c): schwarz-weißer Wanderer (eigene Figur, Manga-Linienstil) in einer endlosen Megastruktur (SVG, Strichschraffur).
    Alle 10 Charakterlevel ein neues Teil oder eine Verwandlung (99 Stufen bis Level 990, `domain/avatar.ts`),
    Vorschau-Regler, Ausrüstungsliste und eigene Feier beim Überschreiten einer 10er-Grenze.
    Animationen (Asche, Drohnen, Scheinwerfer, Störsignal) entfallen bei „Bewegung reduzieren“.

@@ -305,6 +305,39 @@ input[type='date']::-webkit-calendar-picker-indicator {
   }
 }
 
+.av-shaft {
+  animation: av-shaft 7s ease-in-out infinite;
+}
+@keyframes av-shaft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0.55;
+  }
+  42% {
+    opacity: 0.9;
+  }
+  44% {
+    opacity: 0.5;
+  }
+}
+.av-lift {
+  animation: av-lift 14s ease-in-out infinite;
+}
+@keyframes av-lift {
+  0%,
+  10%,
+  100% {
+    transform: translateY(0);
+  }
+  45%,
+  60% {
+    transform: translateY(-150px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-sheet,
   .animate-fade,

@@ -1,9 +1,9 @@
-import { useId, type ReactNode } from 'react'
+import { useId } from 'react'
 import type { AvatarCounts } from '../../domain/avatar'
 
 /*
- * Dystopischer Avatar im Anime-Linienstil: nur weiße Linien auf Schwarz,
- * Schatten als Manga-Rasterpunkte.
+ * Dystopischer Avatar: ein Wanderer in einer endlosen Megastruktur.
+ * Nur weiße Linien auf Schwarz, Schatten als Strichschraffur.
  * Gezeichnet wird anhand der Zähler aus domain/avatar (z. B. mouth 2 = Gasmaske).
  */
 
@@ -17,155 +17,145 @@ const rnd = (i: number, k: number) => {
   return x - Math.floor(x)
 }
 
-const BUILDINGS = [
-  { x: 4, w: 26, h: 104, jag: 9 },
-  { x: 204, w: 30, h: 118, jag: 11 },
-  { x: 32, w: 18, h: 66, jag: 7 },
-  { x: 180, w: 22, h: 76, jag: 8 },
-  { x: 54, w: 20, h: 50, jag: 6 },
-  { x: 160, w: 18, h: 46, jag: 5 },
-  { x: 0, w: 8, h: 140, jag: 12 },
-  { x: 232, w: 8, h: 150, jag: 10 },
-  { x: 76, w: 14, h: 34, jag: 4 },
-  { x: 146, w: 14, h: 30, jag: 4 },
-  { x: 110, w: 20, h: 22, jag: 3 },
+const LIGHTS: P[] = [
+  [88, 92],
+  [152, 100],
+  [100, 70],
+  [140, 66],
+  [76, 132],
 ]
-const STARS = [
-  [28, 40],
-  [74, 30],
-  [112, 44],
-  [150, 32],
-  [176, 60],
-]
-const CROWS = [
-  [152, 62],
-  [166, 54],
-  [58, 70],
-  [96, 52],
-  [212, 92],
+/** Wächter-Silhouetten auf fernen Vorsprüngen */
+const WATCHERS: P[] = [
+  [52, 150],
+  [82, 190],
+  [200, 150],
+  [42, 110],
+  [184, 150],
 ]
 
 export function Avatar({ c, className, animate = true }: { c: AvatarCounts; className?: string; animate?: boolean }) {
   const uid = useId().replace(/:/g, '')
   const ids: Ids = { glow: `glow-${uid}`, tone: `tone-${uid}` }
-  const glow = ids.glow
   const a = (cls: string) => (animate ? cls : undefined)
 
   return (
     <svg viewBox="0 0 240 280" className={className} role="img" aria-label="Dein Avatar">
       <defs>
-        <filter id={glow} x="-50%" y="-50%" width="200%" height="200%">
+        <filter id={ids.glow} x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="2.2" result="b" />
           <feMerge>
             <feMergeNode in="b" />
             <feMergeNode in="SourceGraphic" />
           </feMerge>
         </filter>
-        <pattern id={ids.tone} width={3} height={3} patternUnits="userSpaceOnUse">
-          <circle cx={1.5} cy={1.5} r={0.6} fill={W} fillOpacity={0.6} />
+        {/* Strichschraffur für Schatten */}
+        <pattern id={ids.tone} width={3} height={3} patternUnits="userSpaceOnUse" patternTransform="rotate(35)">
+          <line x1={0.5} y1={0} x2={0.5} y2={3} stroke={W} strokeWidth={0.55} strokeOpacity={0.6} />
         </pattern>
       </defs>
       <rect width="240" height="280" fill={B} />
 
       <g stroke={W} fill={B} strokeWidth={1.3} strokeLinecap="round" strokeLinejoin="round">
-        {/* Himmel */}
-        {STARS.slice(0, c.star).map(([x, y], i) => (
-          <g key={`s${i}`} className={a('av-twinkle')} style={{ animationDelay: `${i * 0.7}s` }}>
-            <line x1={x - 3} y1={y} x2={x + 3} y2={y} />
-            <line x1={x} y1={y - 3} x2={x} y2={y + 3} />
-          </g>
-        ))}
-        {c.moon >= 1 && (
-          <g>
-            <circle cx={198} cy={50} r={22} />
-            <path d="M198 28 A22 22 0 0 1 198 72 A15 22 0 0 0 198 28 Z" fill={`url(#${ids.tone})`} stroke="none" />
-            <circle cx={190} cy={44} r={4} strokeOpacity={0.5} />
-            <circle cx={203} cy={60} r={2.5} strokeOpacity={0.5} />
-            {c.moon >= 2 && <path d="M186 31 l7 10 l-5 7 l10 7 l-3 10" fill="none" strokeWidth={1.6} />}
-          </g>
-        )}
+        {/* Lichtschächte von oben */}
         {c.searchlight >= 1 && (
-          <polygon
-            points="40,250 4,40 34,32"
-            fill={W}
-            fillOpacity={0.07}
-            stroke="none"
-            className={a('av-sweep')}
-            style={{ transformOrigin: '40px 250px' }}
-          />
+          <polygon points="74,40 88,40 132,250 62,250" fill={W} fillOpacity={0.07} stroke="none" className={a('av-shaft')} />
         )}
         {c.searchlight >= 2 && (
-          <polygon
-            points="206,250 186,30 216,28"
-            fill={W}
-            fillOpacity={0.07}
-            stroke="none"
-            className={a('av-sweep-rev')}
-            style={{ transformOrigin: '206px 250px' }}
-          />
+          <polygon points="150,40 160,40 186,250 138,250" fill={W} fillOpacity={0.07} stroke="none" className={a('av-shaft')} style={{ animationDelay: '-3s' }} />
         )}
 
-        {/* Ruinen */}
-        <g strokeOpacity={0.55}>
-          {BUILDINGS.slice(0, c.building).map((b, i) => {
-            const top = GROUND - b.h
-            const d = `M${b.x} ${GROUND} L${b.x} ${top} L${b.x + b.w * 0.35} ${top + b.jag} L${b.x + b.w * 0.6} ${top - b.jag * 0.4} L${b.x + b.w} ${top + b.jag * 1.2} L${b.x + b.w} ${GROUND} Z`
-            const windows: ReactNode[] = []
-            for (let y = top + b.jag + 8, r = 0; y < GROUND - 8; y += 12, r++) {
-              for (let x = b.x + 4, k = 0; x < b.x + b.w - 5; x += 8, k++) {
-                if (rnd(i * 31 + r, k) > 0.55) windows.push(<rect key={`${r}-${k}`} x={x} y={y} width={3} height={4} strokeOpacity={0.6} />)
-              }
-            }
-            return (
-              <g key={`b${i}`}>
-                <path d={d} />
-                {windows}
-              </g>
-            )
-          })}
-        </g>
-        {c.tower >= 1 && (
-          <g>
-            <path d="M44 250 L52 104 L60 250" fill="none" />
-            {[230, 205, 180, 155, 130].map((y, i) => (
-              <path key={i} d={`M${44 + (250 - y) * 0.053} ${y} L${60 - (250 - y - 25) * 0.053} ${y - 25}`} fill="none" strokeOpacity={0.7} />
-            ))}
-            <rect x={45} y={96} width={14} height={8} />
-            <circle cx={52} cy={92} r={2} fill={W} className={a('av-blink')} />
+        <Megastructure n={c.building} ids={ids} />
+
+        {/* Ferne Lichter in der Tiefe */}
+        {LIGHTS.slice(0, c.star).map(([x, y], i) => (
+          <g key={`l${i}`} className={a('av-twinkle')} style={{ animationDelay: `${i * 0.7}s` }}>
+            <circle cx={x} cy={y} r={1.1} fill={W} stroke="none" />
+            <path d={`M${x - 3.5} ${y} L${x + 3.5} ${y} M${x} ${y - 3.5} L${x} ${y + 3.5}`} strokeWidth={0.6} strokeOpacity={0.7} />
           </g>
-        )}
-        {c.monolith >= 1 && (
-          <g>
-            <rect x={212} y={150} width={14} height={100} />
-            <line x1={219} y1={158} x2={219} y2={242} strokeOpacity={0.4} />
-          </g>
-        )}
-        {c.banner >= 1 && (
-          <g>
-            <line x1={22} y1={250} x2={22} y2={146} />
-            <path d="M22 148 L52 154 L46 160 L54 168 L22 170 Z" className={a('av-flutter')} style={{ transformOrigin: '22px 158px' }} />
-          </g>
-        )}
-        {CROWS.slice(0, c.crow).map(([x, y], i) => (
-          <path key={`c${i}`} d={`M${x - 5} ${y} q2.5 -3 5 0 q2.5 -3 5 0`} fill="none" className={a('av-glide')} style={{ animationDelay: `${i * 0.9}s` }} />
         ))}
 
-        {/* Boden */}
-        <rect x={0} y={GROUND} width={240} height={30} fill={`url(#${ids.tone})`} stroke="none" opacity={0.5} />
-        <line x1={0} y1={GROUND} x2={240} y2={GROUND} />
-        {[18, 64, 182, 220].map((x, i) => (
-          <path key={`r${i}`} d={`M${x} ${GROUND} l4 -5 l5 2 l3 3`} fill="none" strokeOpacity={0.6} />
+        {/* Gigantische Schleuse in der rechten Wand */}
+        {c.moon >= 1 && (
+          <g>
+            <circle cx={228} cy={112} r={27} strokeWidth={1.6} />
+            <circle cx={228} cy={112} r={20} />
+            <path d="M228 112 m-20 0 a20 20 0 0 0 40 0 Z" fill={`url(#${ids.tone})`} stroke="none" />
+            {Array.from({ length: 12 }, (_, i) => {
+              const ang = (i / 12) * Math.PI * 2
+              return <line key={i} x1={f1(228 + Math.cos(ang) * 20)} y1={f1(112 + Math.sin(ang) * 20)} x2={f1(228 + Math.cos(ang) * 27)} y2={f1(112 + Math.sin(ang) * 27)} strokeWidth={0.9} />
+            })}
+            {[0, 1, 2, 3].map((i) => {
+              const ang = (i / 4) * Math.PI * 2 + 0.4
+              return <line key={`sp${i}`} x1={f1(228 + Math.cos(ang) * 6)} y1={f1(112 + Math.sin(ang) * 6)} x2={f1(228 + Math.cos(ang) * 20)} y2={f1(112 + Math.sin(ang) * 20)} />
+            })}
+            <circle cx={228} cy={112} r={6} />
+            {c.moon >= 2 && (
+              <g>
+                <path d="M203 98 L208 103 L206 109 L213 112 L210 119" fill="none" strokeWidth={1.6} />
+                <path d="M201 120 L209 117 L214 124 L208 133 L201 131 Z" />
+                <path d="M203 124 l6 3 M204 129 l4 -2" strokeWidth={0.7} />
+              </g>
+            )}
+          </g>
+        )}
+
+        {/* Aufzugsschacht */}
+        {c.tower >= 1 && (
+          <g>
+            <path d="M168 40 L168 250 M180 40 L180 250" fill="none" />
+            {[40, 70, 100, 130, 160, 190, 220].map((y) => (
+              <path key={y} d={`M168 ${y} L180 ${y + 30} M180 ${y} L168 ${y + 30}`} strokeWidth={0.6} strokeOpacity={0.5} fill="none" />
+            ))}
+            <g className={a('av-lift')}>
+              <rect x={169.5} y={200} width={9} height={14} />
+              <line x1={174} y1={40} x2={174} y2={200} strokeWidth={0.6} strokeOpacity={0.6} />
+              <circle cx={174} cy={205} r={1} fill={W} stroke="none" className={a('av-blink')} />
+            </g>
+          </g>
+        )}
+
+        {/* Altes Terminal */}
+        {c.monolith >= 1 && (
+          <g>
+            <path d="M210 250 L210 204 L232 198 L232 250 Z" />
+            <rect x={213} y={205} width={16} height={14} />
+            <path d="M215 209 l8 0 M215 212 l11 0 M215 215 l5 0" strokeWidth={0.7} />
+            <rect x={221} y={214} width={2.5} height={2.5} fill={W} stroke="none" className={a('av-blink')} />
+            <path d="M213 226 L229 226 M213 230 L229 230" strokeWidth={0.6} strokeOpacity={0.6} />
+          </g>
+        )}
+
+        {/* Warnzeichen an der Wand */}
+        {c.banner >= 1 && (
+          <g>
+            <path d="M17 126 L30 150 L4 150 Z" strokeWidth={1.5} />
+            <path d="M17 134 L17 143" strokeWidth={1.8} />
+            <circle cx={17} cy={146.5} r={0.9} fill={W} stroke="none" />
+          </g>
+        )}
+
+        {/* Wächter */}
+        {WATCHERS.slice(0, c.crow).map(([x, y], i) => (
+          <Watcher key={`w${i}`} x={x} y={y} cls={a('av-blink')} delay={i * 0.6} />
+        ))}
+
+        {/* Laufsteg */}
+        <rect x={0} y={GROUND} width={240} height={30} fill={`url(#${ids.tone})`} stroke="none" opacity={0.45} />
+        <line x1={0} y1={GROUND} x2={240} y2={GROUND} strokeWidth={1.5} />
+        <line x1={0} y1={GROUND + 6} x2={240} y2={GROUND + 6} strokeOpacity={0.6} />
+        {Array.from({ length: 30 }, (_, i) => (
+          <line key={`gr${i}`} x1={4 + i * 8} y1={GROUND} x2={7 + i * 8} y2={GROUND + 6} strokeWidth={0.7} strokeOpacity={0.5} />
         ))}
         {c.trail >= 1 &&
           [0, 1, 2, 3, 4, 5].map((i) => (
-            <ellipse key={`t${i}`} cx={20 + i * 14} cy={262 - (i % 2) * 4} rx={3} ry={1.6} strokeOpacity={0.6} />
+            <ellipse key={`t${i}`} cx={20 + i * 14} cy={264 - (i % 2) * 4} rx={3} ry={1.6} strokeOpacity={0.6} />
           ))}
 
         {/* Drohnen */}
-        {c.drone >= 1 && <Drone x={182} y={66} beam={c.drone >= 2} cls={a('av-bob')} />}
-        {c.drone >= 3 && <Drone x={60} y={98} beam={false} cls={a('av-bob-slow')} />}
+        {c.drone >= 1 && <Drone x={194} y={70} beam={c.drone >= 2} cls={a('av-bob')} />}
+        {c.drone >= 3 && <Drone x={62} y={96} beam={false} cls={a('av-bob-slow')} />}
 
-        {/* Manga-Konzentrationslinien hinter der Lichtgestalt */}
+        {/* Konzentrationslinien hinter der Lichtgestalt */}
         {c.apex >= 1 &&
           Array.from({ length: 44 }, (_, i) => {
             const ang = (i / 44) * Math.PI * 2 + rnd(i, 11) * 0.08
@@ -187,7 +177,7 @@ export function Avatar({ c, className, animate = true }: { c: AvatarCounts; clas
           </g>
         )}
 
-        <g filter={c.apex >= 1 ? `url(#${glow})` : undefined}>
+        <g filter={c.apex >= 1 ? `url(#${ids.glow})` : undefined}>
           <Figure c={c} ids={ids} anim={a} />
         </g>
 
@@ -198,9 +188,9 @@ export function Avatar({ c, className, animate = true }: { c: AvatarCounts; clas
         {/* Vordergrund */}
         {c.wire >= 1 && (
           <g fill="none">
-            <path d="M0 266 q10 -6 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" />
+            <path d="M0 268 q10 -6 20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0 t20 0" />
             {Array.from({ length: 12 }, (_, i) => (
-              <path key={`w${i}`} d={`M${8 + i * 20} 261 l4 4 m0 -4 l-4 4`} />
+              <path key={`w${i}`} d={`M${8 + i * 20} 263 l4 4 m0 -4 l-4 4`} />
             ))}
           </g>
         )}
@@ -231,6 +221,155 @@ export function Avatar({ c, className, animate = true }: { c: AvatarCounts; clas
         )}
       </g>
     </svg>
+  )
+}
+
+/**
+ * Die endlose Megastruktur: 11 Ausbaustufen, von hinten nach vorne gezeichnet.
+ * n = Anzahl freigeschalteter Teile.
+ */
+function Megastructure({ n, ids }: { n: number; ids: Ids }) {
+  const hatch = `url(#${ids.tone})`
+  const panels = [18, 46, 74, 102, 130, 158, 186, 214, 242]
+  return (
+    <g>
+      {/* 10: ferne Fassaden */}
+      {n >= 10 && (
+        <g opacity={0.35}>
+          {[
+            [44, 64, 46, 72],
+            [150, 64, 46, 72],
+          ].map(([x0, y0, w, h], k) => (
+            <g key={k}>
+              <rect x={x0} y={y0} width={w} height={h} strokeWidth={0.7} />
+              {Array.from({ length: 11 }, (_, r) =>
+                Array.from({ length: 7 }, (_, q) =>
+                  rnd(k * 50 + r, q) > 0.45 ? <rect key={`${r}-${q}`} x={x0 + 3 + q * 6} y={y0 + 3 + r * 6} width={1.6} height={1.6} fill={W} stroke="none" /> : null,
+                ),
+              )}
+            </g>
+          ))}
+        </g>
+      )}
+      {/* 8: tiefer Schacht (Flucht nach hinten) */}
+      {n >= 8 && (
+        <g opacity={0.4} fill="none" strokeWidth={0.8}>
+          <path d="M34 0 L96 84 M206 0 L144 84 M34 250 L96 176 M206 250 L144 176" />
+          <rect x={96} y={84} width={48} height={92} />
+          <rect x={106} y={104} width={28} height={52} />
+          <rect x={113} y={118} width={14} height={24} />
+        </g>
+      )}
+      {/* 5: ferne Brücke */}
+      {n >= 5 && (
+        <g opacity={0.55} fill="none">
+          <path d="M34 150 L206 150 M34 154 L206 154 M34 142 L206 142" />
+          {Array.from({ length: 15 }, (_, i) => (
+            <line key={i} x1={40 + i * 12} y1={142} x2={40 + i * 12} y2={150} strokeWidth={0.7} />
+          ))}
+          <path d="M34 168 L54 154 M206 168 L186 154" strokeWidth={0.8} />
+        </g>
+      )}
+      {/* 4: hängende Kabel */}
+      {n >= 4 && (
+        <g fill="none">
+          <path d="M34 64 Q120 150 206 58" strokeWidth={1.8} />
+          <path d="M34 86 Q110 172 206 96" strokeWidth={1.1} />
+        </g>
+      )}
+      {/* 9: zweites Rohr */}
+      {n >= 9 && (
+        <g>
+          <rect x={34} y={46} width={172} height={8} />
+          {[52, 92, 132, 172].map((x) => (
+            <rect key={x} x={x} y={44} width={4} height={12} />
+          ))}
+        </g>
+      )}
+      {/* 3: riesiges Rohr */}
+      {n >= 3 && (
+        <g>
+          <rect x={34} y={22} width={172} height={16} strokeWidth={1.5} />
+          <rect x={34} y={32} width={172} height={6} fill={hatch} stroke="none" />
+          {[60, 100, 140, 180].map((x) => (
+            <g key={x}>
+              <rect x={x} y={19} width={6} height={22} />
+              <circle cx={x + 3} cy={22} r={0.7} fill={W} stroke="none" />
+              <circle cx={x + 3} cy={38} r={0.7} fill={W} stroke="none" />
+            </g>
+          ))}
+        </g>
+      )}
+      {/* 7: Kabelstränge */}
+      {n >= 7 && (
+        <g fill="none">
+          <path d="M186 38 C184 90 190 140 186 196 q-3 8 2 12" />
+          <path d="M192 38 C194 100 189 150 193 212 q2 6 -3 9" strokeWidth={1.8} />
+          <path d="M197 38 C199 80 196 120 199 168 q3 6 -1 10" strokeWidth={0.9} />
+        </g>
+      )}
+      {/* 1: linke Wand */}
+      {n >= 1 && (
+        <g>
+          <rect x={-2} y={-2} width={36} height={254} strokeWidth={1.6} />
+          <rect x={26} y={0} width={8} height={250} fill={hatch} stroke="none" />
+          {panels.map((y, i) => (
+            <g key={y}>
+              <line x1={0} y1={y} x2={34} y2={y} strokeWidth={0.8} />
+              <line x1={i % 2 ? 12 : 20} y1={y - 28} x2={i % 2 ? 12 : 20} y2={y} strokeWidth={0.6} strokeOpacity={0.6} />
+              <circle cx={4} cy={y - 4} r={0.7} fill={W} stroke="none" />
+            </g>
+          ))}
+          <path d="M34 110 L48 110 M38 110 L34 118" fill="none" />
+        </g>
+      )}
+      {/* 11: Durchbruch in der linken Wand */}
+      {n >= 11 && (
+        <g>
+          <path d="M3 62 L14 56 L27 65 L31 80 L25 95 L29 104 L12 111 L5 98 L1 84 Z" />
+          <path d="M3 62 L14 56 L27 65 L31 80 L25 95 L29 104 L12 111 L5 98 L1 84 Z" fill={hatch} stroke="none" opacity={0.6} />
+          <path d="M2 72 L30 77 M1 90 L28 93 M14 56 L12 111" fill="none" strokeWidth={0.9} />
+        </g>
+      )}
+      {/* 2: rechte Wand */}
+      {n >= 2 && (
+        <g>
+          <rect x={206} y={-2} width={36} height={254} strokeWidth={1.6} />
+          <rect x={206} y={0} width={8} height={250} fill={hatch} stroke="none" />
+          {panels.map((y, i) => (
+            <g key={y}>
+              <line x1={206} y1={y} x2={240} y2={y} strokeWidth={0.8} />
+              <line x1={i % 2 ? 222 : 230} y1={y - 28} x2={i % 2 ? 222 : 230} y2={y} strokeWidth={0.6} strokeOpacity={0.6} />
+              <circle cx={236} cy={y - 4} r={0.7} fill={W} stroke="none" />
+            </g>
+          ))}
+        </g>
+      )}
+      {/* 6: Treppe ins Nichts */}
+      {n >= 6 && (
+        <g>
+          <path
+            d={`M34 250 ${Array.from({ length: 8 }, (_, i) => `L${34 + i * 6} ${244 - i * 6} L${40 + i * 6} ${244 - i * 6}`).join(' ')} L82 202 Z`}
+          />
+          <path d="M34 232 L82 184" fill="none" strokeWidth={0.9} />
+          {[0, 2, 4, 6, 8].map((i) => (
+            <line key={i} x1={34 + i * 6} y1={232 - i * 6} x2={34 + i * 6} y2={244 - i * 6} strokeWidth={0.7} />
+          ))}
+        </g>
+      )}
+    </g>
+  )
+}
+
+function Watcher({ x, y, cls, delay }: { x: number; y: number; cls?: string; delay: number }) {
+  return (
+    <g opacity={0.8}>
+      <path d={`M${x - 7} ${y} L${x + 7} ${y}`} fill="none" />
+      <path d={`M${x - 2.2} ${y - 17} L${x + 2.2} ${y - 17} L${x + 1.4} ${y - 9} L${x - 1.4} ${y - 9} Z`} strokeWidth={0.9} />
+      <path d={`M${x - 1} ${y - 9} L${x - 1.8} ${y} M${x + 1} ${y - 9} L${x + 1.8} ${y} M${x - 2.2} ${y - 16} L${x - 3.2} ${y - 5} M${x + 2.2} ${y - 16} L${x + 3.2} ${y - 5}`} fill="none" strokeWidth={0.9} />
+      <ellipse cx={x} cy={y - 20.5} rx={1.9} ry={2.8} strokeWidth={0.9} />
+      <circle cx={x + 0.5} cy={y - 21} r={0.7} fill={W} stroke="none" className={cls} style={{ animationDelay: `${delay}s` }} />
+    </g>
   )
 }
 
@@ -301,49 +440,42 @@ const across = (a: P, b: P, t: number, w: number) => {
 
 const angle = (a: P, b: P) => (Math.atan2(b[1] - a[1], b[0] - a[0]) * 180) / Math.PI
 
-/** Haare relativ zum Kopfmittelpunkt: stachelig, Pony fällt über die Stirn */
+/** Haare relativ zum Kopfmittelpunkt: zottelig, Strähnen hängen ins Gesicht */
+const BANG_EDGE: P[] = [
+  [12, -3], [10, 3], [7, -4], [5, 5], [2, -4], [-1, 8], [-3, -3], [-7, 4], [-9, -4], [-12, 3],
+]
 const HAIR_FULL: P[] = [
-  [-15, 5], [-23, -2], [-17, -6], [-27, -15], [-15, -16], [-19, -29], [-6, -21], [0, -34], [6, -22], [18, -30],
-  [14, -16], [26, -14], [17, -6], [22, 2], [15, 5],
-  [12, -6], [8, 0], [4, -7], [-1, 1], [-4, -7], [-9, 0], [-12, -6],
+  [-15, 13], [-17, 3], [-20, -5], [-17, -15], [-10, -22], [-1, -24], [8, -23], [15, -18], [19, -9], [19, 2], [16, 12],
+  [13, 3], ...BANG_EDGE, [-13, 7],
 ]
-const HAIR_HELMET: P[] = [
-  [-16, -6], [0, -9], [16, -6], [18, 9], [14, 5],
-  [12, -6], [8, 0], [4, -7], [-1, 1], [-4, -7], [-9, 0], [-12, -6],
-  [-14, 5], [-18, 9],
-]
-const BANGS: P[] = [
-  [-14, -9], [-6, -14], [6, -14], [14, -9], [15, 5], [12, -6], [8, 0], [4, -7], [-1, 1], [-4, -7], [-9, 0], [-12, -6], [-15, 5],
-]
+const HAIR_HELMET: P[] = [[-16, -6], [0, -9], [16, -6], [17, 11], [13, 3], ...BANG_EDGE, [-13, 7], [-16, 12]]
+const BANGS: P[] = [[-13, -9], [-6, -13], [6, -13], [13, -9], [15, 9], [13, 3], ...BANG_EDGE, [-13, 7], [-15, 10]]
 const shape = (pts: P[], hx: number, hy: number) => 'M' + pts.map(([x, y]) => `${hx + x} ${hy + y}`).join(' L') + ' Z'
 
 function Eye({ x, y, side, mode, ids, anim }: { x: number; y: number; side: -1 | 1; mode: 'open' | 'tired' | 'glow'; ids: Ids; anim: Anim }) {
   if (mode === 'tired') {
     return (
       <g>
-        <path d={`M${x - 2.8} ${y + 0.6} A2.8 3 0 0 0 ${x + 2.8} ${y + 0.6} Z`} strokeWidth={0.9} />
-        <circle cx={x} cy={y + 2} r={1.1} fill={W} stroke="none" />
-        <path d={`M${x - side * 4} ${y + 0.4} Q${x} ${y - 0.8} ${x + side * 4.6} ${y + 0.8}`} fill="none" strokeWidth={1.9} />
-        <path d={`M${x - 3.6} ${y - 2.6} L${x + 3.6} ${y - 2.2}`} fill="none" strokeWidth={0.8} strokeOpacity={0.7} />
+        <path d={`M${x - 1.5} ${y + 0.4} A1.5 1.5 0 0 0 ${x + 1.5} ${y + 0.4} Z`} fill={W} stroke="none" />
+        <path d={`M${x - side * 3.8} ${y + 0.3} L${x + side * 4.4} ${y - 0.3}`} fill="none" strokeWidth={1.7} />
+        <path d={`M${x - side * 2.4} ${y + 2.2} L${x + side * 3.2} ${y + 1.8}`} fill="none" strokeWidth={0.7} strokeOpacity={0.7} />
       </g>
     )
   }
   return (
     <g>
-      <ellipse cx={x} cy={y + 0.8} rx={2.8} ry={3.4} strokeWidth={0.9} />
-      <ellipse
-        cx={x}
-        cy={y + 1.2}
-        rx={1.6}
-        ry={2.1}
+      <circle
+        cx={x + side * 0.3}
+        cy={y + 0.3}
+        r={mode === 'glow' ? 1.9 : 1.5}
         fill={W}
         stroke="none"
         filter={mode === 'glow' ? `url(#${ids.glow})` : undefined}
         className={mode === 'glow' ? anim('av-pulse') : undefined}
       />
-      <circle cx={x + 0.8} cy={y} r={0.75} fill={B} stroke="none" />
-      <path d={`M${x - side * 4.2} ${y - 1.6} Q${x + side * 0.4} ${y - 4.8} ${x + side * 4.9} ${y - 1} l${side * 1.3} 0.9`} fill="none" strokeWidth={1.9} />
-      <path d={`M${x - side * 1.6} ${y + 5} L${x + side * 2.6} ${y + 4.4}`} fill="none" strokeWidth={0.8} strokeOpacity={0.7} />
+      {mode !== 'glow' && <circle cx={x + side * 0.3} cy={y + 0.3} r={0.55} fill={B} stroke="none" />}
+      <path d={`M${x - side * 3.8} ${y - 0.8} L${x + side * 4.7} ${y - 2.3} l${side * 0.8} 0.9`} fill="none" strokeWidth={1.8} />
+      <path d={`M${x - side * 2.4} ${y + 2.1} L${x + side * 3.4} ${y + 1.4}`} fill="none" strokeWidth={0.7} strokeOpacity={0.8} />
     </g>
   )
 }
@@ -594,6 +726,11 @@ function Figure({ c, ids, anim }: { c: AvatarCounts; ids: Ids; anim: Anim }) {
         </g>
       )}
 
+      {/* Hoher Kragen */}
+      <path d={`M${hx - 13} ${sY + 3} L${hx - 11.5} ${hy + 10} L${hx - 5} ${hy + 14} L${hx - 4.5} ${sY + 1} Z`} />
+      <path d={`M${hx + 13} ${sY + 3} L${hx + 11.5} ${hy + 10} L${hx + 5} ${hy + 14} L${hx + 4.5} ${sY + 1} Z`} />
+      <path d={`M${hx + 12.5} ${sY + 2} L${hx + 11.5} ${hy + 11} L${hx + 8} ${hy + 13} L${hx + 8} ${sY + 1} Z`} fill={`url(#${ids.tone})`} stroke="none" />
+
       {/* Schal um den Hals */}
       {c.mouth >= 1 && <path d={`M${hx - 11} ${hy + 17} Q${hx} ${hy + 23} ${hx + 11} ${hy + 17} L${hx + 13} ${hy + 25} Q${hx} ${hy + 31} ${hx - 13} ${hy + 25} Z`} />}
 
@@ -601,21 +738,20 @@ function Figure({ c, ids, anim }: { c: AvatarCounts; ids: Ids; anim: Anim }) {
       <g transform={hunched ? `rotate(9 ${hx} ${hy + 16})` : undefined}>
         {hood && <path d={`M${hx - 19} ${hy + 16} Q${hx - 26} ${hy - 28} ${hx} ${hy - 29} Q${hx + 26} ${hy - 28} ${hx + 19} ${hy + 16} L${hx + 23} ${sY + 5} L${hx - 23} ${sY + 5} Z`} />}
         <path
-          d={`M${hx - 14} ${hy} C${hx - 14} ${hy - 19} ${hx + 14} ${hy - 19} ${hx + 14} ${hy} L${hx + 12} ${hy + 8} Q${hx + 9} ${hy + 14} ${hx} ${hy + 18} Q${hx - 9} ${hy + 14} ${hx - 12} ${hy + 8} Z`}
+          d={`M${hx - 12.5} ${hy - 1} C${hx - 13} ${hy - 18} ${hx + 13} ${hy - 18} ${hx + 12.5} ${hy - 1} L${hx + 11} ${hy + 9} Q${hx + 7} ${hy + 15.5} ${hx} ${hy + 18} Q${hx - 7} ${hy + 15.5} ${hx - 11} ${hy + 9} Z`}
           strokeWidth={1.5}
         />
+        <path d={`M${hx + 8.5} ${hy + 4} L${hx + 12.3} ${hy + 1} L${hx + 11} ${hy + 9} Q${hx + 8} ${hy + 14} ${hx + 4} ${hy + 16.5} Z`} fill={`url(#${ids.tone})`} stroke="none" />
 
         {/* Nase, Mund oder Maske */}
         {c.mouth < 2 && (
           <g fill="none" strokeWidth={0.9}>
-            <path d={`M${hx + 1} ${hy + 9} l1.2 2.4 l-1.6 0.3`} />
+            <path d={`M${hx + 0.5} ${hy + 7.5} l1 3.6 l-1.6 0.4`} />
             <path
               d={
                 victory
-                  ? `M${hx - 3} ${hy + 13.4} Q${hx} ${hy + 15.6} ${hx + 3.4} ${hy + 12.8}`
-                  : hunched
-                    ? `M${hx - 2} ${hy + 14.4} L${hx + 2} ${hy + 14.4}`
-                    : `M${hx - 2.6} ${hy + 14} L${hx + 2.2} ${hy + 13.6}`
+                  ? `M${hx - 3} ${hy + 13.8} L${hx + 1} ${hy + 13.8} Q${hx + 2.8} ${hy + 13.6} ${hx + 3.6} ${hy + 12.6}`
+                  : `M${hx - 3} ${hy + 13.9} L${hx + 2.5} ${hy + 13.6}`
               }
             />
           </g>
@@ -642,12 +778,14 @@ function Figure({ c, ids, anim }: { c: AvatarCounts; ids: Ids; anim: Anim }) {
             <>
               <path d={shape(helmet ? HAIR_HELMET : HAIR_FULL, hx, hy)} strokeWidth={1.6} />
               {!helmet && (
-                <path
-                  d={`M${hx - 7} ${hy - 17} L${hx - 3} ${hy - 7} M${hx + 6} ${hy - 17} L${hx + 4} ${hy - 8} M${hx - 15} ${hy - 11} L${hx - 10} ${hy - 4} M${hx + 14} ${hy - 11} L${hx + 11} ${hy - 4}`}
-                  fill="none"
-                  strokeWidth={0.8}
-                  strokeOpacity={0.7}
-                />
+                <>
+                  <path d={shape(HAIR_FULL, hx, hy)} fill={`url(#${ids.tone})`} stroke="none" opacity={0.7} />
+                  <path
+                    d={`M${hx - 8} ${hy - 19} Q${hx - 6} ${hy - 10} ${hx - 3} ${hy - 4} M${hx + 4} ${hy - 20} Q${hx + 5} ${hy - 10} ${hx + 3} ${hy - 4} M${hx - 15} ${hy - 12} Q${hx - 14} ${hy - 2} ${hx - 14} ${hy + 8} M${hx + 15} ${hy - 12} Q${hx + 16} ${hy - 2} ${hx + 15} ${hy + 8}`}
+                    fill="none"
+                    strokeWidth={0.8}
+                  />
+                </>
               )}
             </>
           )}
