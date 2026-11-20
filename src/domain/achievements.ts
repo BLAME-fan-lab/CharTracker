@@ -24,6 +24,9 @@ export interface AchievementStats {
   bestReadingWeekStreak: number
   musicHours: number
   musicMilestone: number
+  /** maßgebliche Schachwertung (Rapid/Blitz/Daily) */
+  chessRating: number
+  chessGames: number
   projectMilestones: number
   largeMilestones: number
   projectHours: number
@@ -33,7 +36,7 @@ export interface AchievementStats {
   hasBackup: boolean
 }
 
-export type AchievementCategory = 'routine' | 'uni' | 'sport' | 'reading' | 'music' | 'project' | 'todo' | 'character'
+export type AchievementCategory = 'routine' | 'uni' | 'sport' | 'reading' | 'music' | 'chess' | 'project' | 'todo' | 'character'
 
 export const CATEGORY_NAMES: Record<AchievementCategory, string> = {
   routine: 'Routinen',
@@ -41,6 +44,7 @@ export const CATEGORY_NAMES: Record<AchievementCategory, string> = {
   sport: 'Sport',
   reading: 'Lesen',
   music: 'Musik',
+  chess: 'Schach',
   project: 'Projekt',
   todo: 'To-dos',
   character: 'Charakter',
@@ -95,6 +99,14 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'm-hands', category: 'music', title: 'Beidhändig', description: 'Meilenstein „Beidhändig“ erreicht.', progress: at(2, (s) => s.musicMilestone) },
   { id: 'm-hours-10', category: 'music', title: 'Erste Stunden', description: '10 Stunden am Instrument geübt.', progress: at(10, (s) => s.musicHours) },
   { id: 'm-hours-100', category: 'music', title: 'Hundert Stunden Übung', description: '100 Stunden am Instrument geübt.', progress: at(100, (s) => s.musicHours) },
+  // Schach
+  { id: 'c-first', category: 'chess', title: 'Erster Zug', description: 'Eine Schachwertung erfasst.', progress: at(1, (s) => (s.chessRating > 0 ? 1 : 0)) },
+  { id: 'c-800', category: 'chess', title: 'Figuren im Griff', description: 'Wertung 800 erreicht.', progress: at(800, (s) => s.chessRating) },
+  { id: 'c-1200', category: 'chess', title: 'Taktiker', description: 'Wertung 1200 erreicht.', progress: at(1200, (s) => s.chessRating) },
+  { id: 'c-1600', category: 'chess', title: 'Vereinsstärke', description: 'Wertung 1600 erreicht.', progress: at(1600, (s) => s.chessRating) },
+  { id: 'c-2000', category: 'chess', title: 'Experte am Brett', description: 'Wertung 2000 erreicht.', progress: at(2000, (s) => s.chessRating) },
+  { id: 'c-games-100', category: 'chess', title: 'Hundert Partien', description: '100 gewertete Partien gespielt.', progress: at(100, (s) => s.chessGames) },
+  { id: 'c-games-1000', category: 'chess', title: 'Tausend Partien', description: '1000 gewertete Partien gespielt.', progress: at(1000, (s) => s.chessGames) },
   // Projekt
   { id: 'p-ms-1', category: 'project', title: 'Erster Meilenstein', description: 'Einen Projekt-Meilenstein erreicht.', progress: at(1, (s) => s.projectMilestones) },
   { id: 'p-large', category: 'project', title: 'Großer Wurf', description: 'Einen großen Meilenstein erreicht.', progress: at(1, (s) => s.largeMilestones) },

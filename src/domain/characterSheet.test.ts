@@ -18,6 +18,7 @@ function input(patch: Partial<CharacterInput> = {}): CharacterInput {
     books: [],
     modules: [],
     pastGrades: [],
+    chessLogs: [],
     profile: { ...base, id: 'me', birthDate: '2005-03-01', heightCm: 180, sex: 'm', instrument: 'Klavier', musicMilestone: 0 },
     bodyLogs: [],
     exercises: [],
@@ -52,7 +53,7 @@ describe('computeCharacter', () => {
     const s = computeCharacter(input())
     expect(s.level).toBe(0)
     expect(s.age).toBe(21)
-    expect(s.skills).toHaveLength(7)
+    expect(s.skills).toHaveLength(8)
     expect(s.skills.find((x) => x.key === 'academic')!.hint).toMatch(/Noten/)
   })
 
@@ -113,6 +114,6 @@ describe('computeCharacter', () => {
   it('Musik: Einstieg mit 5 h Übung ≈ Level 1; Charakter = Durchschnitt', () => {
     const s = computeCharacter(input({ musicLogs: [{ ...base, id: 'x', date: TODAY, minutes: 300 }] }))
     expect(Math.floor(level(s, 'music'))).toBe(1)
-    expect(s.level).toBeCloseTo(level(s, 'music') / 7)
+    expect(s.level).toBeCloseTo(level(s, 'music') / 8)
   })
 })

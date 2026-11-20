@@ -4,6 +4,7 @@ import type {
   AppSettings,
   Book,
   BodyLog,
+  ChessLog,
   Exercise,
   LiftLog,
   MusicLog,
@@ -62,6 +63,7 @@ export class TrackerDB extends Dexie {
   musicLogs!: EntityTable<MusicLog, 'id'>
   projectMilestones!: EntityTable<ProjectMilestone, 'id'>
   pastGrades!: EntityTable<PastGrade, 'id'>
+  chessLogs!: EntityTable<ChessLog, 'id'>
 
   constructor(name = 'tracker') {
     super(name)
@@ -101,6 +103,9 @@ export class TrackerDB extends Dexie {
         // Bestehende Nutzer bekommen Profil und Standard-Übungen
         await seedCharacter(tx.table('profile'), tx.table('exercises'))
       })
+    this.version(3).stores({
+      chessLogs: 'id, date, updatedAt',
+    })
     this.on('populate', async () => {
       await seedDatabase(this)
       await seedCharacter(this.profile, this.exercises)
@@ -138,6 +143,7 @@ export const TABLE_NAMES = [
   'musicLogs',
   'projectMilestones',
   'pastGrades',
+  'chessLogs',
 ] as const
 
 export type TableName = (typeof TABLE_NAMES)[number]

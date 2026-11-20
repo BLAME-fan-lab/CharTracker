@@ -231,6 +231,24 @@ export interface Profile extends BaseRecord {
   instrument: string
   /** Index auf der Meilenstein-Leiter des Instruments */
   musicMilestone: number
+  /** Benutzername bei chess.com (für den Schach-Baum) */
+  chessUsername?: string | null
+}
+
+/** Schach-Wertungen an einem Tag, id = `chess_${date}` */
+export interface ChessLog extends BaseRecord {
+  date: DateStr
+  rapid: number | null
+  blitz: number | null
+  bullet: number | null
+  daily: number | null
+  /** höchste Puzzle-Wertung */
+  puzzle: number | null
+  /** gewertete Partien insgesamt (Rapid, Blitz, Bullet, Daily) */
+  games: number
+  /** letzte gespielte Partie */
+  lastPlayed: DateStr | null
+  source: 'chesscom' | 'manual'
 }
 
 /** id = `body_${date}` */

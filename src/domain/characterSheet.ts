@@ -1,6 +1,7 @@
 import type {
   Book,
   BodyLog,
+  ChessLog,
   Exercise,
   GoalTarget,
   Habit,
@@ -50,10 +51,11 @@ import {
   type SexKey,
 } from './character'
 import { bestFullStreak, type AchievementStats } from './achievements'
+import { chessActivity, chessExperience, chessLevel, effectiveRating } from './chess'
 import { bestHabitStreak, bestPerfectDayStreak, DoneIndex, isHabitActiveOn } from './habits'
 import { trainingProgress, versionForWeek } from './weekly'
 
-export type SkillKey = 'academic' | 'sport' | 'health' | 'hygiene' | 'reading' | 'music' | 'project'
+export type SkillKey = 'academic' | 'sport' | 'health' | 'hygiene' | 'reading' | 'music' | 'chess' | 'project'
 
 export const SKILL_NAMES: Record<SkillKey, string> = {
   academic: 'Akademisch',
@@ -62,10 +64,11 @@ export const SKILL_NAMES: Record<SkillKey, string> = {
   hygiene: 'Hygiene & Pflege',
   reading: 'Lesen',
   music: 'Musikalisch',
+  chess: 'Schach',
   project: 'Projekt',
 }
 
-export const SKILL_ORDER: SkillKey[] = ['academic', 'sport', 'health', 'hygiene', 'reading', 'music', 'project']
+export const SKILL_ORDER: SkillKey[] = ['academic', 'sport', 'health', 'hygiene', 'reading', 'music', 'chess', 'project']
 
 export interface SkillDetail {
   label: string
@@ -98,6 +101,7 @@ export interface CharacterInput {
   liftLogs: LiftLog[]
   runLogs: RunLog[]
   musicLogs: MusicLog[]
+  chessLogs: ChessLog[]
   projectLogs: ProjectLog[]
   projectMilestones: ProjectMilestone[]
   studyLogs: StudyLog[]
@@ -328,6 +332,29 @@ export function computeCharacter(input: CharacterInput): CharacterSheet {
     })
   }
 
+  /* Schach */
+  {
+    const last = [...input.chessLogs].filter((l) => l.date <= today).sort((a, b) => a.date.localeCompare(b.date)).pop() ?? null
+    const eff = last ? effectiveRating(last) : null
+    const details: SkillDetail[] = []
+    if (last && eff) {
+      const r = (v: number | null) => (v == null ? '–' : String(v))
+      details.push({ label: 'Maßgebliche Wertung', value: `${eff.rating} (${eff.from})` })
+      details.push({ label: 'Rapid · Blitz · Daily', value: `${r(last.rapid)} · ${r(last.blitz)} · ${r(last.daily)}` })
+      if (last.puzzle) details.push({ label: 'Puzzles (Bestwert)', value: String(last.puzzle) })
+      details.push({ label: 'Gewertete Partien', value: `${last.games} (Erfahrung ×${chessExperience(last.games).toFixed(2)})` })
+      const act = chessActivity(last.lastPlayed, today)
+      if (act < 1) details.push({ label: 'Pause', value: `länger nicht gespielt (×${act.toFixed(2)})` })
+      details.push({ label: 'Stand', value: `${last.date}${last.source === 'chesscom' ? ' · chess.com' : ' · von Hand'}` })
+    }
+    skills.push({
+      key: 'chess',
+      level: chessLevel(last, today),
+      details,
+      hint: last ? null : 'Verbinde deinen chess.com-Namen oder trag deine Wertung ein (Charakter → Schach).',
+    })
+  }
+
   /* Projekt */
   {
     const hours = sumBy(input.projectLogs.filter((l) => l.date <= today), (l) => l.minutes) / 60
@@ -404,6 +431,7 @@ function achievementStats(
   const doneMilestones = input.projectMilestones.filter((m) => m.doneDate)
 
   const start = input.trackingStart <= today ? input.trackingStart : today
+  const lastChess = [...past(input.chessLogs)].sort((a, b) => a.date.localeCompare(b.date)).pop()
 
   return {
     perfectDays: dailyAdherence(input.habits, ctx.done, start, today).filter((v) => v === 1).length,
@@ -423,6 +451,8 @@ function achievementStats(
     bestReadingWeekStreak: bestFullStreak(ctx.readingSeries),
     musicHours: sumBy(past(input.musicLogs), (l) => l.minutes) / 60,
     musicMilestone: input.profile?.musicMilestone ?? 0,
+    chessRating: lastChess ? effectiveRating(lastChess).rating : 0,
+    chessGames: lastChess?.games ?? 0,
     projectMilestones: doneMilestones.length,
     largeMilestones: doneMilestones.filter((m) => m.size === 'large').length,
     projectHours: sumBy(past(input.projectLogs), (l) => l.minutes) / 60,

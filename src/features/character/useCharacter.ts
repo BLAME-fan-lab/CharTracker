@@ -7,6 +7,7 @@ import {
   useAllTrainingSessions,
   useBodyLogs,
   useBooks,
+  useChessLogs,
   useExercises,
   useGoalTargets,
   useHabitLogs,
@@ -43,6 +44,7 @@ export function useCharacter(today: DateStr): CharacterSheet | undefined {
   const liftLogs = useLiftLogs()
   const runLogs = useRunLogs()
   const musicLogs = useMusicLogs()
+  const chessLogs = useChessLogs()
   const projectLogs = useAllProjectLogs()
   const projectMilestones = useProjectMilestones()
   const studyLogs = useAllStudyLogs()
@@ -52,7 +54,7 @@ export function useCharacter(today: DateStr): CharacterSheet | undefined {
   return useMemo(() => {
     if (
       !settings || !habits || !habitLogs || !trainingPlans || !trainingSessions || !goalTargets || !readingLogs ||
-      !books || !modules || !pastGrades || !bodyLogs || !exercises || !liftLogs || !runLogs || !musicLogs ||
+      !books || !modules || !pastGrades || !bodyLogs || !exercises || !liftLogs || !runLogs || !musicLogs || !chessLogs ||
       !projectLogs || !projectMilestones || !studyLogs || !studyUnits || !todos
     ) {
       return undefined
@@ -75,6 +77,7 @@ export function useCharacter(today: DateStr): CharacterSheet | undefined {
       liftLogs,
       runLogs,
       musicLogs,
+      chessLogs,
       projectLogs,
       projectMilestones,
       studyLogs,
@@ -84,7 +87,7 @@ export function useCharacter(today: DateStr): CharacterSheet | undefined {
     })
   }, [
     today, settings, habits, habitLogs, trainingPlans, trainingSessions, goalTargets, readingLogs, books, modules,
-    pastGrades, profile, bodyLogs, exercises, liftLogs, runLogs, musicLogs, projectLogs, projectMilestones,
+    pastGrades, profile, bodyLogs, exercises, liftLogs, runLogs, musicLogs, chessLogs, projectLogs, projectMilestones,
     studyLogs, studyUnits, todos,
   ])
 }

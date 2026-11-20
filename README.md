@@ -98,5 +98,9 @@ Probeklausur) oder Präfix (`Sonstiges:`).
 10. ✅ Beute (7b): jeder Sieg gibt Seelensplitter, manchmal Tränke oder Talismane (4 Seltenheiten), Bosse ein eigenes
     Relikt (`domain/loot.ts`). 3 Talisman-Plätze mit gedeckelten Boni (+15 % Werte, +5 Krit-Punkte, +25 % Element),
     Schmiede (Splitter → Stufe 1–5), Zerlegen. Ausgerüstete Talismane leuchten farbig am Avatar.
+11. ✅ Schach (8. Skill-Baum): Wertungen werden direkt im Browser von der öffentlichen chess.com-Schnittstelle geladen
+    (`api.chess.com/pub/player/{name}/stats`, erlaubt Browser-Abrufe), einmal pro Tag automatisch, alternativ von Hand.
+    Level aus der besten Wertung (Rapid/Blitz/Daily) auf realistischer Skala (`domain/chess.ts`), Erfahrung und Pausen
+    wirken mit. Schach erhöht im Kampf die Krit-Chance, ab Schach 300 gibt es die Technik „Gambit“.
 
 Später: Strong-CSV-Import (Workouts, Gewichtsverlauf, PRs), Sync über Supabase.

@@ -67,7 +67,7 @@ describe('Talismane', () => {
     expect(scrapTalisman(inv, 'r')).toBe(inv)
   })
   it('Boni und Tränke machen den Helden stärker', () => {
-    const s: SkillLevels = { academic: 300, sport: 300, health: 300, hygiene: 300, reading: 300, music: 300, project: 300 }
+    const s: SkillLevels = { academic: 300, sport: 300, health: 300, hygiene: 300, reading: 300, music: 300, chess: 300, project: 300 }
     const counts = avatarState(300).counts
     const base = loadout(s, 300, counts, 'demon')
     const boosted = loadout(s, 300, counts, 'demon', { bonus: { atk: 15, mag: 15, hp: 15, def: 15, spd: 0, mana: 15, crit: 5, elem: {} }, heal: 3 })

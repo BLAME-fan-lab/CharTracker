@@ -13,7 +13,7 @@ import {
   type SkillLevels,
 } from './combat'
 
-const uniform = (l: number): SkillLevels => ({ academic: l, sport: l, health: l, hygiene: l, reading: l, music: l, project: l })
+const uniform = (l: number): SkillLevels => ({ academic: l, sport: l, health: l, hygiene: l, reading: l, music: l, chess: l, project: l })
 const winRate = (level: number, floor: number, n = 40) => {
   const hero = loadout(uniform(level), level, avatarState(level).counts, 'demon')
   const enemy = enemyForFloor(floor)

@@ -6,6 +6,7 @@ import type {
   Book,
   BookDifficulty,
   BodyLog,
+  ChessLog,
   Exercise,
   LiftLog,
   LiftStandard,
@@ -175,3 +176,25 @@ export async function updatePastGrade(id: string, patch: Partial<Omit<PastGrade,
 }
 
 export const deletePastGrade = (id: string) => softDelete(db.pastGrades, id)
+
+/* ---------- Schach ---------- */
+
+export const chessLogId = (date: DateStr) => `chess_${date}`
+
+export async function listChessLogs(): Promise<ChessLog[]> {
+  return (await db.chessLogs.toArray()).filter(alive).sort((a, b) => a.date.localeCompare(b.date))
+}
+
+export type ChessValues = Pick<ChessLog, 'rapid' | 'blitz' | 'bullet' | 'daily' | 'puzzle' | 'games' | 'lastPlayed' | 'source'>
+
+/** Wertungen für einen Tag speichern (überschreibt den Stand dieses Tages) */
+export async function saveChessLog(date: DateStr, values: ChessValues): Promise<void> {
+  const id = chessLogId(date)
+  await db.transaction('rw', db.chessLogs, async () => {
+    const existing = await db.chessLogs.get(id)
+    if (existing) await db.chessLogs.update(id, changed({ ...values, deletedAt: null }))
+    else await db.chessLogs.add(created({ date, ...values }, id))
+  })
+}
+
+export const deleteChessLog = (id: string) => softDelete(db.chessLogs, id)

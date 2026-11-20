@@ -8,6 +8,7 @@ import { SKILL_NAMES, SKILL_ORDER, type SkillKey } from '../../domain/characterS
 import { cx } from '../../lib/cx'
 import { useToday } from '../../lib/useToday'
 import { AcademicEditor } from './editors/AcademicEditor'
+import { ChessEditor } from './editors/ChessEditor'
 import { HabitSkillInfo } from './editors/HabitSkillInfo'
 import { HealthEditor } from './editors/HealthEditor'
 import { MusicEditor } from './editors/MusicEditor'
@@ -25,6 +26,7 @@ const SKILL_CATEGORY: Record<SkillKey, AchievementCategory> = {
   hygiene: 'routine',
   reading: 'reading',
   music: 'music',
+  chess: 'chess',
   project: 'project',
 }
 
@@ -91,6 +93,7 @@ export function SkillPage() {
       {key === 'hygiene' && <HabitSkillInfo skill="hygiene" />}
       {key === 'reading' && <ReadingEditor today={today} />}
       {key === 'music' && <MusicEditor />}
+      {key === 'chess' && <ChessEditor today={today} />}
       {key === 'project' && <ProjectEditor today={today} />}
 
       <Card title="Errungenschaften">

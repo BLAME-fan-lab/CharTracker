@@ -15,6 +15,7 @@ const SHORT: Record<SkillKey, string> = {
   hygiene: 'Hygiene',
   reading: 'Lesen',
   music: 'Musik',
+  chess: 'Schach',
   project: 'Projekt',
 }
 

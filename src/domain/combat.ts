@@ -46,7 +46,8 @@ export function heroStats(s: SkillLevels, gear: Gear): HeroStats {
     mag: Math.round(10 + s.academic * 0.12 + s.reading * 0.04 + gear.grimoire * 3),
     def: Math.round(4 + s.health * 0.06 + gear.armor * 3 + gear.shield * 3 + gear.legs + gear.shoulders + gear.arms),
     spd: Math.round(10 + s.music * 0.08 + s.sport * 0.02),
-    crit: Math.min(0.3, 0.05 + (s.hygiene / 1000) * 0.2),
+    // Hygiene (Disziplin) und Schach (Voraussicht) bringen kritische Treffer
+    crit: Math.min(0.3, 0.05 + (s.hygiene / 1000) * 0.12 + (s.chess / 1000) * 0.12),
     mana: Math.round(40 + s.academic * 0.25 + s.reading * 0.2),
     stamina: Math.round(40 + s.sport * 0.2 + s.health * 0.05),
     potions: 1 + Math.floor(s.project / 250) + (gear.belt >= 4 ? 1 : 0),
@@ -98,6 +99,7 @@ export const TECHNIQUES: Technique[] = [
   { id: 'doppelhieb', name: 'Doppelhieb', kind: 'damage', power: 0.7, hits: 2, cost: 8, req: { skill: 'sport', min: 50 }, desc: 'Zwei schnelle Hiebe.' },
   { id: 'konter', name: 'Konter', kind: 'counter', power: 0.6, hits: 1, cost: 10, req: { skill: 'sport', min: 150 }, desc: 'Fängt den nächsten Angriff ab und schlägt 60 % zurück.' },
   { id: 'schildbrecher', name: 'Schildbrecher', kind: 'pierce', power: 1.5, hits: 1, cost: 12, req: { skill: 'sport', min: 250 }, desc: 'Ignoriert die Verteidigung des Gegners.' },
+  { id: 'gambit', name: 'Gambit', kind: 'pierce', power: 1.2, hits: 2, cost: 14, req: { skill: 'chess', min: 300 }, desc: 'Ein geopferter Hieb öffnet die Deckung: zwei durchdringende Treffer.' },
   { id: 'wirbelhieb', name: 'Wirbelhieb', kind: 'damage', power: 2.2, hits: 1, cost: 18, req: { skill: 'sport', min: 400 }, desc: 'Ein Hieb mit voller Drehung.' },
   { id: 'klingensturm', name: 'Klingensturm', kind: 'damage', power: 0.6, hits: 5, cost: 26, req: { skill: 'sport', min: 600 }, desc: 'Fünf Hiebe in einem Atemzug.' },
   { id: 'drachenschnitt', name: 'Drachenschnitt', kind: 'damage', power: 3.6, hits: 1, cost: 34, req: { skill: 'sport', min: 800 }, desc: 'Der stärkste Schwerthieb.' },
@@ -210,13 +212,13 @@ export const TOWER_FLOORS = 100
 
 /** Gleichmäßiger Vergleichsheld auf einem Level (alle Bäume gleich, Ausrüstung passend) */
 export function referenceHero(level: number): HeroStats {
-  const s: SkillLevels = { academic: level, sport: level, health: level, hygiene: level, reading: level, music: level, project: level }
+  const s: SkillLevels = { academic: level, sport: level, health: level, hygiene: level, reading: level, music: level, chess: level, project: level }
   return heroStats(s, avatarState(level).counts)
 }
 
 /** Stärkster Einzelzug des Vergleichshelden (Technik oder Zauber) */
 function referenceBest(level: number) {
-  const s: SkillLevels = { academic: level, sport: level, health: level, hygiene: level, reading: level, music: level, project: level }
+  const s: SkillLevels = { academic: level, sport: level, health: level, hygiene: level, reading: level, music: level, chess: level, project: level }
   const st = referenceHero(level)
   const tech = unlockedTechniques(s, level).map((t) => st.atk * t.power * t.hits)
   const spells = equippedSpells(s, level, st.slots)

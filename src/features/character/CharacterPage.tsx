@@ -15,11 +15,13 @@ import { CombatBook } from './combat/CombatBook'
 import { useCombat } from './combat/useCombat'
 import { SKILL_COLOR, SKILL_ICON } from './skillMeta'
 import { useCharacter } from './useCharacter'
+import { useChessAutoSync } from './useChessAutoSync'
 import { NextRankText, RankBadge, SkillRadar } from './visuals'
 
 export function CharacterPage() {
   const today = useToday()
   const sheet = useCharacter(today)
+  useChessAutoSync(today)
   const [preview, setPreview] = useState(false)
   const combat = useCombat(sheet)
   const book = useParamSheet('buch')

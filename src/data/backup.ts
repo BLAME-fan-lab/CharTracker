@@ -139,4 +139,5 @@ export const TABLE_LABELS: Partial<Record<TableName, string>> = {
   modules: 'Module',
   studyUnits: 'Lerneinheiten',
   projectLogs: 'Projektzeiten',
+  chessLogs: 'Schachwertungen',
 }

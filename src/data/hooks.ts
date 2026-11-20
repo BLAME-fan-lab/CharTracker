@@ -12,6 +12,7 @@ import {
   listExercises,
   listLiftLogs,
   listMusicLogs,
+  listChessLogs,
   listPastGrades,
   listProjectMilestones,
   listRunLogs,
@@ -66,6 +67,7 @@ export const useLiftLogs = () => useLiveQuery(listLiftLogs, [])
 export const useRunLogs = () => useLiveQuery(listRunLogs, [])
 export const useBooks = () => useLiveQuery(listBooks, [])
 export const useMusicLogs = () => useLiveQuery(listMusicLogs, [])
+export const useChessLogs = () => useLiveQuery(listChessLogs, [])
 export const useProjectMilestones = () => useLiveQuery(listProjectMilestones, [])
 export const usePastGrades = () => useLiveQuery(listPastGrades, [])
 export const useAllStudyLogs = () => useLiveQuery(listAllStudyLogs, [])
